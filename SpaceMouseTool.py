@@ -95,32 +95,14 @@ class SpaceMouseTool(Tool):
         axisInWorldSpace = axisInWorldSpace - originWorldSpace
 
         # rotate camera around that axis by angle
-        origin = camera.getWorldPosition()
         rotOrigin = SpaceMouseTool._cameraTool.getOrigin()
-        camToOrigin = origin - rotOrigin
 
         # rotation matrix around the axis
         rotMat = Matrix()
-        rotMat.setByRotationAxis(angle * 0.0001, Vector(data=axisInWorldSpace))
-
-        # translation matrix to shift camera to origin i.e. 0,0,0 in world space
-        transToOrigMat = Matrix()
-        transToOrigMat.setByTranslation(-origin)
-
-        # compute new position for camera
-        newPos = camToOrigin.preMultiply(rotMat) + rotOrigin
-
-        # translation matrix to shift camera to new position
-        transToNewPosMat = Matrix()
-        transToNewPosMat.setByTranslation(newPos)
-
-        # combine to final transformation
-        trafo = transToOrigMat               # shift to origin
-        trafo.preMultiply(rotMat)            # rotate camera in place
-        trafo.preMultiply(transToNewPosMat)  # shift to new position
+        rotMat.setByRotationAxis(angle * 0.0001, Vector(data=axisInWorldSpace), rotOrigin.getData())
 
         # apply transformation
-        camera.setTransformation(camera.getLocalTransformation().preMultiply(trafo))
+        camera.setTransformation(camera.getLocalTransformation().preMultiply(rotMat))
 
     @staticmethod
     def spacemouse_move_callback(
