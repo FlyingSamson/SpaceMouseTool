@@ -1,5 +1,6 @@
 import math
 import numpy as np
+import traceback
 
 from UM.Application import Application
 from UM.Tool import Tool
@@ -13,12 +14,6 @@ from .lib.pyspacemouse import get_spacemouse_daemon_instance
 import time
 
 
-def homogenize(vec4: np.array) -> np.array:  # vec3
-    vec4 /= vec4[3]
-    return vec4[0:3]
-
-
-# class SpaceMouseTool():
 class SpaceMouseTool(Tool):
     _scene = None
     _cameraTool = None
@@ -82,24 +77,20 @@ class SpaceMouseTool(Tool):
         # space mouse system: x: right, y: front, z: down
         # camera system:     x: right, y: up,    z: front
         # i.e. rotate the vector about x by 90 degrees in mathematical positive sense
-        axisInViewSpace = np.array([-axisX, axisZ, -axisY, 1])
+        axisInViewSpace = Vector(-axisX, axisZ, -axisY)
 
         # get inverse view matrix
-        invViewMatrix = camera.getWorldTransformation().getData()
+        invViewMatrix = camera.getWorldOrientation().toMatrix()
 
         # compute rotation axis in world space
-        axisInWorldSpace = homogenize(np.dot(invViewMatrix, axisInViewSpace))
-        originWorldSpace = homogenize(np.dot(invViewMatrix, np.array([0, 0, 0, 1])))
-
-        # subtract origin in world space to obtain direction rather then points in 3D space
-        axisInWorldSpace = axisInWorldSpace - originWorldSpace
+        axisInWorldSpace = axisInViewSpace.preMultiply(invViewMatrix)
 
         # rotate camera around that axis by angle
         rotOrigin = SpaceMouseTool._cameraTool.getOrigin()
 
         # rotation matrix around the axis
         rotMat = Matrix()
-        rotMat.setByRotationAxis(angle * 0.0001, Vector(data=axisInWorldSpace), rotOrigin.getData())
+        rotMat.setByRotationAxis(angle * 0.0001, axisInWorldSpace, rotOrigin.getData())
 
         # apply transformation
         camera.setTransformation(camera.getLocalTransformation().preMultiply(rotMat))
@@ -108,9 +99,12 @@ class SpaceMouseTool(Tool):
     def spacemouse_move_callback(
             tx: int, ty: int, tz: int,
             angle: float, axisX: float, axisY: float, axisZ: float) -> None:
-        # translate and zoom:
-        # SpaceMouseTool._translateCamera(tx, ty, tz)
-        SpaceMouseTool._rotateCamera(angle, axisX, axisY, axisZ)
+        try:
+            # translate and zoom:
+            # SpaceMouseTool._translateCamera(tx, ty, tz)
+            SpaceMouseTool._rotateCamera(angle, axisX, axisY, axisZ)
+        except Exception:
+            Logger.log("d", "Error " + traceback.format_exc())
 
         # Logger.log("d",
         #          "Move:" + str(tx) + " " + str(ty) + " " + str(tz) + " "
