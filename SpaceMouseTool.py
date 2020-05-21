@@ -85,35 +85,31 @@ class SpaceMouseTool(Tool):
         axisInViewSpace = np.array([-axisX, +axisZ, -axisY, 1])
 
         # compute inverse view matrix:
-        # worldTransformation of camera translates view coordinates to world coordinates
-        # The word system is x: right, y: up, z: front, i.e. if the viewmatrix is identity  we see
-        # the space as x right, y up and z front. We thus have to rotate the resulting vector by 90
-        # degrees about x in mathmatical poitive sense to obtain the vector in the system where z
-        # is pointing upward (as we have to rotate the world system by 90 degrees in mathmatical
-        # negative sense, to obtain the system x: right, y: back, z: up)
+        # worldTransformation of camera translates view coordinates to world coordinates, i.e.
+        # inverse view matrix
         invViewMatrix = camera.getWorldTransformation()
-        viewRotMatrix = Matrix()
-        viewRotMatrix.setByRotationAxis(math.pi/2, Vector(1, 0, 0))
         invViewMatrix = invViewMatrix.getData()
 
+        # compute rotation axis and up direction in world space
         yInWorldSpace = homogenize(np.dot(invViewMatrix, np.array([0, 1, 0, 1])))
         axisInWorldSpace = homogenize(np.dot(invViewMatrix, axisInViewSpace))
         originWorldSpace = homogenize(np.dot(invViewMatrix, np.array([0, 0, 0, 1])))
 
+        # subtract origin in worldspace to obtain direction rather then points in 3D space
         axisInWorldSpace = axisInWorldSpace - originWorldSpace
         yInWorldSpace = yInWorldSpace - originWorldSpace
 
-        # rotate camera
+        # compute new location of camera by rotating the old position arround the origin
         diff = camera.getWorldPosition()
-
         rotMat = Matrix()
         rotMat.setByRotationAxis(angle * 0.0001, Vector(data=axisInWorldSpace))
-
         newPos = diff.preMultiply(rotMat)
-        newUp = Vector(data=yInWorldSpace).preMultiply(rotMat)
-
         camera.setPosition(newPos)
 
+        # compute new up direction by rotating the old direction arround the origin
+        newUp = Vector(data=yInWorldSpace).preMultiply(rotMat)
+
+        # make the camera look at the origin with the new up direction pointing upwards
         camera.lookAt(Vector(0, 0, 0), up=newUp)
 
 
