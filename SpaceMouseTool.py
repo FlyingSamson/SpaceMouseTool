@@ -1,14 +1,8 @@
-import math
-import numpy as np
-import traceback
-
 from UM.Application import Application
 from UM.Tool import Tool
 from UM.Logger import Logger
 from UM.Math.Matrix import Matrix
 from UM.Math.Vector import Vector
-from UM.Math.Quaternion import Quaternion
-from UM.Scene.SceneNode import SceneNode as SceneNode
 
 from .lib.pyspacemouse import get_spacemouse_daemon_instance
 import time
