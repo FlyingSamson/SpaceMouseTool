@@ -82,15 +82,12 @@ class SpaceMouseTool(Tool):
         # spacemouse system: x: right, y: front, z: down
         # camera system:     x: right, y: up,    z: front
         # i.e. rotate the vector about x by 90 degrees in mathmatical positive sense
-        axisInViewSpace = np.array([-axisX, +axisZ, -axisY, 1])
+        axisInViewSpace = np.array([-axisX, axisZ, -axisY, 1])
 
-        # compute inverse view matrix:
-        # worldTransformation of camera translates view coordinates to world coordinates, i.e.
-        # inverse view matrix
-        invViewMatrix = camera.getWorldTransformation()
-        invViewMatrix = invViewMatrix.getData()
+        # get inverse view matrix
+        invViewMatrix = camera.getWorldTransformation().getData()
 
-        # compute rotation axis and up direction in world space
+        # compute rotation axis in world space
         axisInWorldSpace = homogenize(np.dot(invViewMatrix, axisInViewSpace))
         originWorldSpace = homogenize(np.dot(invViewMatrix, np.array([0, 0, 0, 1])))
 
@@ -98,9 +95,32 @@ class SpaceMouseTool(Tool):
         axisInWorldSpace = axisInWorldSpace - originWorldSpace
 
         # rotate camera arround that axis by angle
-        rotQuat = Quaternion.fromAngleAxis(angle * 0.0001, Vector(data=axisInWorldSpace))
-        camera.rotate(rotQuat, SceneNode.TransformSpace.World)
+        origin = camera.getWorldPosition()
+        rotOrigin = SpaceMouseTool._cameraTool.getOrigin()
+        camToOrigin = origin - rotOrigin
 
+        # rotation matrix around the axis
+        rotMat = Matrix()
+        rotMat.setByRotationAxis(angle * 0.0001, Vector(data=axisInWorldSpace))
+
+        # translation matrix to shift camera to origing i.e. 0,0,0 in world space
+        transToOrigMat = Matrix()
+        transToOrigMat.setByTranslation(-origin)
+
+        # compute new position for camera
+        newPos = camToOrigin.preMultiply(rotMat) + rotOrigin
+
+        # translation matrix to shift camera to new position
+        transToNewPosMat = Matrix()
+        transToNewPosMat.setByTranslation(newPos)
+
+        # combine to final transforamtion
+        trafo = transToOrigMat               # shift to origin
+        trafo.preMultiply(rotMat)            # rotate camera in place
+        trafo.preMultiply(transToNewPosMat)  # shift to new position
+
+        # apply transforamtion
+        camera.setTransformation(camera.getLocalTransformation().preMultiply(trafo))
 
     @staticmethod
     def spacemouse_move_callback(
@@ -110,7 +130,7 @@ class SpaceMouseTool(Tool):
         # SpaceMouseTool._translateCamera(tx, ty, tz)
         SpaceMouseTool._rotateCamera(angle, axisX, axisY, axisZ)
 
-        #Logger.log("d",
+        # Logger.log("d",
         #          "Move:" + str(tx) + " " + str(ty) + " " + str(tz) + " "
         #           + str(angle) + " "
         #           + str(axisX) + " " + str(axisY) + " " + str(axisZ) + "\n")
