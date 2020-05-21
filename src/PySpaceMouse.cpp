@@ -18,7 +18,7 @@ static PyObject* get_spacemouse_daemon_instance(PyObject* /*self*/, PyObject* ar
   } else if (!PyCallable_Check(pyButtonReleaseCallback)) {
     PyErr_SetString(PyExc_TypeError, "Second argument (buttonReleasCallback) is not a function!");
   } else {
-    spacemouse::SpaceMouseDaemon& smDaemon = spacemouse::SpaceMouseDaemon::instance();
+    auto& smDaemon = spacemouse::SpaceMouseDaemon::instance();
     smDaemon.setMoveCallback([pyMoveCallback](spacemouse::SpaceMouseMoveEvent e) -> void {
       PyGILState_STATE gil = PyGILState_Ensure();
 
