@@ -17,7 +17,7 @@ import time
 class SpaceMouseTool(Tool):
     _scene = None
     _cameraTool = None
-    _rotCenter = Vector(0, 0, 0)
+    _rotScale = 0.0001
     _transScale = 0.05
     _zoomScale = 0.00005
     _zoomMin = -0.495  # same as used in CameraTool
@@ -25,10 +25,8 @@ class SpaceMouseTool(Tool):
 
     def __init__(self):
         super().__init__()
-        SpaceMouseTool._scene = \
-            Application.getInstance().getController().getScene()
-        SpaceMouseTool._cameraTool = \
-            Application.getInstance().getController().getTool("CameraTool")
+        SpaceMouseTool._scene = Application.getInstance().getController().getScene()
+        SpaceMouseTool._cameraTool = Application.getInstance().getController().getTool("CameraTool")
         get_spacemouse_daemon_instance(
             SpaceMouseTool.spacemouse_move_callback,
             SpaceMouseTool.spacemouse_button_press_callback,
@@ -54,21 +52,14 @@ class SpaceMouseTool(Tool):
             moveVec = moveVec.set(z=-ty)
             camera.translate(SpaceMouseTool._transScale * moveVec)
         else:  # orthographic
-            # camera_position = camera.getWorldPosition()
             camera.translate(SpaceMouseTool._transScale * moveVec)
-            # SpaceMouseTool._origin += \
-            #   camera.getWorldPosition() - camera_position
-            zoomFactor = \
-                camera.getZoomFactor() - SpaceMouseTool._zoomScale * ty
+            zoomFactor = camera.getZoomFactor() - SpaceMouseTool._zoomScale * ty
             # clamp to [zoomMin, zoomMax]
-            zoomFactor = min(SpaceMouseTool._zoomMax,
-                             max(SpaceMouseTool._zoomMin, zoomFactor))
-            # Logger.log("d", "New zoomFactor" + str(zoomFactor))
+            zoomFactor = min(SpaceMouseTool._zoomMax, max(SpaceMouseTool._zoomMin, zoomFactor))
             camera.setZoomFactor(zoomFactor)
 
     @staticmethod
-    def _rotateCamera(
-            angle: float, axisX: float, axisY: float, axisZ: float) -> None:
+    def _rotateCamera(angle: float, axisX: float, axisY: float, axisZ: float) -> None:
         camera = SpaceMouseTool._scene.getActiveCamera()
         if not camera or not camera.isEnabled():
             return
@@ -90,7 +81,8 @@ class SpaceMouseTool(Tool):
 
         # rotation matrix around the axis
         rotMat = Matrix()
-        rotMat.setByRotationAxis(angle * 0.0001, axisInWorldSpace, rotOrigin.getData())
+        rotMat.setByRotationAxis(
+            angle * SpaceMouseTool._rotScale, axisInWorldSpace, rotOrigin.getData())
 
         # apply transformation
         camera.setTransformation(camera.getLocalTransformation().preMultiply(rotMat))
@@ -99,17 +91,10 @@ class SpaceMouseTool(Tool):
     def spacemouse_move_callback(
             tx: int, ty: int, tz: int,
             angle: float, axisX: float, axisY: float, axisZ: float) -> None:
-        try:
-            # translate and zoom:
-            # SpaceMouseTool._translateCamera(tx, ty, tz)
-            SpaceMouseTool._rotateCamera(angle, axisX, axisY, axisZ)
-        except Exception:
-            Logger.log("d", "Error " + traceback.format_exc())
+        # translate and zoom:
+        SpaceMouseTool._translateCamera(tx, ty, tz)
+        SpaceMouseTool._rotateCamera(angle, axisX, axisY, axisZ)
 
-        # Logger.log("d",
-        #          "Move:" + str(tx) + " " + str(ty) + " " + str(tz) + " "
-        #           + str(angle) + " "
-        #           + str(axisX) + " " + str(axisY) + " " + str(axisZ) + "\n")
 
     @staticmethod
     def spacemouse_button_press_callback(button):
