@@ -91,26 +91,15 @@ class SpaceMouseTool(Tool):
         invViewMatrix = invViewMatrix.getData()
 
         # compute rotation axis and up direction in world space
-        yInWorldSpace = homogenize(np.dot(invViewMatrix, np.array([0, 1, 0, 1])))
         axisInWorldSpace = homogenize(np.dot(invViewMatrix, axisInViewSpace))
         originWorldSpace = homogenize(np.dot(invViewMatrix, np.array([0, 0, 0, 1])))
 
         # subtract origin in worldspace to obtain direction rather then points in 3D space
         axisInWorldSpace = axisInWorldSpace - originWorldSpace
-        yInWorldSpace = yInWorldSpace - originWorldSpace
 
-        # compute new location of camera by rotating the old position arround the origin
-        diff = camera.getWorldPosition()
-        rotMat = Matrix()
-        rotMat.setByRotationAxis(angle * 0.0001, Vector(data=axisInWorldSpace))
-        newPos = diff.preMultiply(rotMat)
-        camera.setPosition(newPos)
-
-        # compute new up direction by rotating the old direction arround the origin
-        newUp = Vector(data=yInWorldSpace).preMultiply(rotMat)
-
-        # make the camera look at the origin with the new up direction pointing upwards
-        camera.lookAt(Vector(0, 0, 0), up=newUp)
+        # rotate camera arround that axis by angle
+        rotQuat = Quaternion.fromAngleAxis(angle * 0.0001, Vector(data=axisInWorldSpace))
+        camera.rotate(rotQuat, SceneNode.TransformSpace.World)
 
 
     @staticmethod
