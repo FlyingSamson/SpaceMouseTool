@@ -47,18 +47,18 @@ class SpaceMouseTool(Tool):
             Logger.log("d", "No camera available")
             return
         moveVec = Vector(0, 0, 0)
-        # Translate camera by tx and tz. We have to reverse x and unse z as y
-        # in order to achieve the default behaviour of the spacemouse (c.f.
+        # Translate camera by tx and tz. We have to reverse x and use z as y
+        # in order to achieve the default behavior of the space mouse (c.f.
         # cube example of 3DX). If you prefer it another way change the setting
         # of the 3D mouse
         moveVec = moveVec.set(x=-tx, y=tz)
 
         # Zoom camera using negated ty. Again you should/can change this
-        # beahviour for space mouse
+        # behavior for space mouse
         if camera.isPerspective():
             moveVec = moveVec.set(z=-ty)
             camera.translate(SpaceMouseTool._transScale * moveVec)
-        else:  # orthografic
+        else:  # orthographic
             # camera_position = camera.getWorldPosition()
             camera.translate(SpaceMouseTool._transScale * moveVec)
             # SpaceMouseTool._origin += \
@@ -79,9 +79,9 @@ class SpaceMouseTool(Tool):
             return
 
         # compute axis in view space:
-        # spacemouse system: x: right, y: front, z: down
+        # space mouse system: x: right, y: front, z: down
         # camera system:     x: right, y: up,    z: front
-        # i.e. rotate the vector about x by 90 degrees in mathmatical positive sense
+        # i.e. rotate the vector about x by 90 degrees in mathematical positive sense
         axisInViewSpace = np.array([-axisX, axisZ, -axisY, 1])
 
         # get inverse view matrix
@@ -91,10 +91,10 @@ class SpaceMouseTool(Tool):
         axisInWorldSpace = homogenize(np.dot(invViewMatrix, axisInViewSpace))
         originWorldSpace = homogenize(np.dot(invViewMatrix, np.array([0, 0, 0, 1])))
 
-        # subtract origin in worldspace to obtain direction rather then points in 3D space
+        # subtract origin in world space to obtain direction rather then points in 3D space
         axisInWorldSpace = axisInWorldSpace - originWorldSpace
 
-        # rotate camera arround that axis by angle
+        # rotate camera around that axis by angle
         origin = camera.getWorldPosition()
         rotOrigin = SpaceMouseTool._cameraTool.getOrigin()
         camToOrigin = origin - rotOrigin
@@ -103,7 +103,7 @@ class SpaceMouseTool(Tool):
         rotMat = Matrix()
         rotMat.setByRotationAxis(angle * 0.0001, Vector(data=axisInWorldSpace))
 
-        # translation matrix to shift camera to origing i.e. 0,0,0 in world space
+        # translation matrix to shift camera to origin i.e. 0,0,0 in world space
         transToOrigMat = Matrix()
         transToOrigMat.setByTranslation(-origin)
 
@@ -114,12 +114,12 @@ class SpaceMouseTool(Tool):
         transToNewPosMat = Matrix()
         transToNewPosMat.setByTranslation(newPos)
 
-        # combine to final transforamtion
+        # combine to final transformation
         trafo = transToOrigMat               # shift to origin
         trafo.preMultiply(rotMat)            # rotate camera in place
         trafo.preMultiply(transToNewPosMat)  # shift to new position
 
-        # apply transforamtion
+        # apply transformation
         camera.setTransformation(camera.getLocalTransformation().preMultiply(trafo))
 
     @staticmethod
