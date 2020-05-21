@@ -1,0 +1,8 @@
+{
+    "name": "Space Mouse Tool",
+    "author": "Dominik V.",
+    "version": "1.0.0",
+    "description": "Provides the tool to manipulate the camera using a space mouse.",
+    "api": "7.2.0",
+    "i18n-catalog": "uranium"
+}
