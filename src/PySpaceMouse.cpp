@@ -58,8 +58,22 @@ static PyObject* start_spacemouse_daemon(PyObject* /*self*/, PyObject* args) {
   return Py_None;
 }
 
+static const char* docString =
+  "Starts the space mouse daemon in the background\n"
+  "\n"
+  "Parameters:\n"
+  "moveCallback (function(int, int, int, float, float, float, float) -> None): "
+    "The callback that is executed when a move event occurs\n"
+  "buttonPressCallback (function(int) -> None):"
+    "The callback that is executed when a button is pressed\n"
+  "buttonReleaseCallback (function(int) -> None):"
+    "The callback that is executed when a button is released\n"
+  "\n"
+  "Returns:\n"
+  "None";
+
 static PyMethodDef SpaceMouseMethods[] = {
-    {"start_spacemouse_daemon", start_spacemouse_daemon, METH_VARARGS, "Blabla"},
+    {"start_spacemouse_daemon", start_spacemouse_daemon, METH_VARARGS, docString},
     {nullptr, nullptr, 0, nullptr}
 };
 
