@@ -91,11 +91,11 @@ class SpaceMouseTool(Tool):
 
 
     @staticmethod
-    def spacemouse_button_press_callback(button):
+    def spacemouse_button_press_callback(button: int):
         Logger.log("d", "Press " + str(button))
 
     @staticmethod
-    def spacemouse_button_release_callback(button):
+    def spacemouse_button_release_callback(button: int):
         Logger.log("d", "Release " + str(button))
 
 
