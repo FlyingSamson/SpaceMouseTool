@@ -59,7 +59,9 @@ static PyObject* get_spacemouse_daemon_instance(PyObject* /*self*/, PyObject* ar
 }
 
 static PyMethodDef SpaceMouseMethods[] = {
-    {"get_spacemouse_daemon_instance", get_spacemouse_daemon_instance, METH_VARARGS, "Blabla"}};
+    {"get_spacemouse_daemon_instance", get_spacemouse_daemon_instance, METH_VARARGS, "Blabla"},
+    {nullptr, nullptr, 0, nullptr}
+};
 
 static struct PyModuleDef PySpaceMouseModule = {PyModuleDef_HEAD_INIT, "pyspacemouse", nullptr, -1,
                                                 SpaceMouseMethods};
