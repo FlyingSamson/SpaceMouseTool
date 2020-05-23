@@ -382,7 +382,11 @@ SpaceMouseDaemon::SpaceMouseDaemon() {
   spaceMouse = &SpaceMouseSpnav::instance();
 #elif WITH_DAEMON3DX
 #error Libspacenav with 3dx daemon not yet supported
+#else
+#error You have to specify which daemon is used
 #endif  // WITH_DAEMONSPACENAV OR WITH_DEAMON3DX
+#else
+#error You have to specify which library (3dx or libspacenav) is used
 #endif  // WITH_LIB3DX OR WITH_LIBSPACENAV
 
   if (!spaceMouse->isInitialized()) spaceMouse->Initialize();
