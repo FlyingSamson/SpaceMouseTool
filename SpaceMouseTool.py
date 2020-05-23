@@ -4,7 +4,7 @@ from UM.Logger import Logger
 from UM.Math.Matrix import Matrix
 from UM.Math.Vector import Vector
 
-from .lib.pyspacemouse import get_spacemouse_daemon_instance
+from .lib.pyspacemouse import start_spacemouse_daemon
 import time
 
 
@@ -21,7 +21,7 @@ class SpaceMouseTool(Tool):
         super().__init__()
         SpaceMouseTool._scene = Application.getInstance().getController().getScene()
         SpaceMouseTool._cameraTool = Application.getInstance().getController().getTool("CameraTool")
-        get_spacemouse_daemon_instance(
+        start_spacemouse_daemon(
             SpaceMouseTool.spacemouse_move_callback,
             SpaceMouseTool.spacemouse_button_press_callback,
             SpaceMouseTool.spacemouse_button_release_callback)

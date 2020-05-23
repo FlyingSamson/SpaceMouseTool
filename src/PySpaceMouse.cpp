@@ -4,7 +4,7 @@
 
 extern "C" {
 
-static PyObject* get_spacemouse_daemon_instance(PyObject* /*self*/, PyObject* args) {
+static PyObject* start_spacemouse_daemon(PyObject* /*self*/, PyObject* args) {
   PyObject *pyMoveCallback, *pyButtonPressCallback, *pyButtonReleaseCallback;
 
   if (!PyArg_ParseTuple(args, "OOO", &pyMoveCallback, &pyButtonPressCallback,
@@ -59,7 +59,7 @@ static PyObject* get_spacemouse_daemon_instance(PyObject* /*self*/, PyObject* ar
 }
 
 static PyMethodDef SpaceMouseMethods[] = {
-    {"get_spacemouse_daemon_instance", get_spacemouse_daemon_instance, METH_VARARGS, "Blabla"},
+    {"start_spacemouse_daemon", start_spacemouse_daemon, METH_VARARGS, "Blabla"},
     {nullptr, nullptr, 0, nullptr}
 };
 
