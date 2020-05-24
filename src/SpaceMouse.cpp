@@ -137,7 +137,9 @@ SpaceMouseSpnav &SpaceMouseSpnav::instance() {
 }
 
 void SpaceMouseSpnav::Initialize() {
+  #ifndef NDEBUG
   std::cout << "Init Spnav" << std::endl;
+  #endif  // NDEBUG
   if (!mInitialized) {
     auto error = spnav_open();
     mInitialized = (error != -1);
@@ -151,7 +153,6 @@ void SpaceMouseSpnav::Initialize() {
                 callback(sev);
               }
             }
-            std::cout << "Thread terminats" << std::endl;
           },
           mSignalExit.get_future(),
           std::bind(&SpaceMouseSpnav::ProcessEvent, this, std::placeholders::_1)));
@@ -160,7 +161,9 @@ void SpaceMouseSpnav::Initialize() {
 }
 
 void SpaceMouseSpnav::Close() {
+  #ifndef NDEBUG
   std::cout << "Close Spnav" << std::endl;
+  #endif  // NDEBUG
   if (mInitialized) {
     spnav_close();
     mInitialized = false;
@@ -327,7 +330,9 @@ SpaceMouse3DX &SpaceMouse3DX::instance() {
 }
 
 void SpaceMouse3DX::Initialize() {
+  #ifndef NDEBUG
   std::cout << "Init 3DX" << std::endl;
+  #endif  // NDEBUG
   if (!mInitialized) {
     auto error = SetConnexionHandlers(handleMessage, nullptr, nullptr, true);
     mInitialized = (error == 0);
@@ -346,7 +351,9 @@ void SpaceMouse3DX::Initialize() {
  *
  */
 void SpaceMouse3DX::Close() {
+  #ifndef NDEBUG
   std::cout << "Close 3DX" << std::endl;
+  #endif  // NDEBUG
   UnregisterConnexionClient(mClientID);
   This = nullptr;
   CleanupConnexionHandlers();
