@@ -59,14 +59,6 @@ enum SpaceMouseButton {
 };
 
 /**
- * @brief Enumerates the states of a spacemouse button
- */
-enum SpaceMouseButtonState {
-  SPMBS_PRESSED = true,  /**< Button pressed */
-  SPMBS_RELEASED = false /**< Button released */
-};
-
-/**
  * @brief Event describing the press of a button
  */
 struct SpaceMouseButtonPressEvent {
