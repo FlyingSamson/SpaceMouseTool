@@ -4,8 +4,13 @@ from UM.Logger import Logger
 from UM.Math.Matrix import Matrix
 from UM.Math.Vector import Vector
 
-from .lib.pyspacemouse import start_spacemouse_daemon
 import time
+
+import platform
+if platform.system() == "Darwin":
+    from .lib.darwin.pyspacemouse import start_spacemouse_daemon
+elif platform.system() == "Linux":
+    from .lib.x86_64.pyspacemouse import start_spacemouse_daemon
 
 
 class SpaceMouseTool(Tool):
