@@ -242,6 +242,10 @@ void SpaceMouse3DX::ProcessEvent(const ConnexionDeviceState *state) {
   SpaceMouseButton bnum = SPMB_UNDEFINED;
   SpaceMouseButton3DX changedButton;
   bool pressed;
+  int buttonCfg;
+
+  // ignore buttons that are not passed through by the 3DX driver
+  int mask = SPMB_3DX_TOP | SPMB_3DX_RIGHT | SPMB_3DX_FRONT | SPMB_3DX_MENU | SPMB_3DX_FIT;
 
   switch (state->command) {
     case kConnexionCmdHandleAxis:
@@ -269,10 +273,12 @@ void SpaceMouse3DX::ProcessEvent(const ConnexionDeviceState *state) {
       mMoveCallback(std::move(moveEvent));
       break;
     case kConnexionCmdHandleButtons:
+      buttonCfg = state->buttons & mask;
+
       // extract the button that has changed:
-      changedButton = static_cast<SpaceMouseButton3DX>(mLastButtonConfig ^ state->buttons);
+      changedButton = static_cast<SpaceMouseButton3DX>(mLastButtonConfig ^ buttonCfg);
       // button was pressed if the bit of the button was set in state->buttons
-      pressed = ((changedButton & state->buttons) != 0);
+      pressed = ((changedButton & buttonCfg) != 0);
       switch (changedButton) {
         case SpaceMouseButton3DX::SPMB_3DX_TOP:
           bnum = SPMB_TOP;
@@ -324,7 +330,7 @@ void SpaceMouse3DX::ProcessEvent(const ConnexionDeviceState *state) {
           break;
       }
 
-      mLastButtonConfig = state->buttons;
+      mLastButtonConfig = buttonCfg;
       if (pressed) {
         if (bnum == SPMB_SHIFT)
           mModifiers.add(SpaceMouseModifierKey::SPMM_SHIFT);
