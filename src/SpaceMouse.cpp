@@ -123,9 +123,9 @@ void SpaceMouseSpnav::ProcessEvent(spnav_event sev) {
         bnum = SPMB_UNDEFINED;
         break;
     }
-    if (sev.button.press)
+    if (sev.button.press) {
       mButtonPressCallback({bnum});
-    else {
+    } else {
       mButtonReleaseCallback({bnum});
     }
   }
@@ -313,9 +313,9 @@ void SpaceMouse3DX::ProcessEvent(const ConnexionDeviceState *state) {
       }
 
       mLastButtonConfig = state->buttons;
-      if (pressed)
+      if (pressed) {
         mButtonPressCallback({bnum});
-      else {
+      } else {
         mButtonReleaseCallback({bnum});
       }
       break;
