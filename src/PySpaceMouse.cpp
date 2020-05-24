@@ -34,7 +34,7 @@ static PyObject* start_spacemouse_daemon(PyObject* /*self*/, PyObject* args) {
         [pyButtonPressCallback](spacemouse::SpaceMouseButtonEvent e) -> void {
           PyGILState_STATE gil = PyGILState_Ensure();
 
-          PyObject* arglist = Py_BuildValue("(i)", (int)e.button);
+          PyObject* arglist = Py_BuildValue("(ii)", (int)e.button, (int)e.modifierKeys.modifiers());
           PyObject* result = PyEval_CallObject(pyButtonPressCallback, arglist);
 
           Py_DECREF(arglist);
@@ -45,7 +45,7 @@ static PyObject* start_spacemouse_daemon(PyObject* /*self*/, PyObject* args) {
         [pyButtonReleaseCallback](spacemouse::SpaceMouseButtonEvent e) -> void {
           PyGILState_STATE gil = PyGILState_Ensure();
 
-          PyObject* arglist = Py_BuildValue("(i)", (int)e.button);
+          PyObject* arglist = Py_BuildValue("(ii)", (int)e.button, (int)e.modifierKeys.modifiers());
           PyObject* result = PyEval_CallObject(pyButtonReleaseCallback, arglist);
 
           Py_DECREF(arglist);
@@ -64,9 +64,9 @@ static const char* docString =
   "Parameters:\n"
   "moveCallback (function(int, int, int, float, float, float, float) -> None): "
     "The callback that is executed when a move event occurs\n"
-  "buttonPressCallback (function(int) -> None):"
+  "buttonPressCallback (function(int, int) -> None):"
     "The callback that is executed when a button is pressed\n"
-  "buttonReleaseCallback (function(int) -> None):"
+  "buttonReleaseCallback (function(int, int) -> None):"
     "The callback that is executed when a button is released\n"
   "\n"
   "Returns:\n"

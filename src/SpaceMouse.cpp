@@ -124,9 +124,21 @@ void SpaceMouseSpnav::ProcessEvent(spnav_event sev) {
         break;
     }
     if (sev.button.press) {
-      mButtonPressCallback({bnum});
+      if (bnum == SPMB_SHIFT)
+        mModifiers.add(SpaceMouseModifierKey::SPMM_SHIFT);
+      else if (bnum == SPMB_CTRL)
+        mModifiers.add(SpaceMouseModifierKey::SPMM_CTRL);
+      else if (bnum == SPMB_ALT)
+        mModifiers.add(SpaceMouseModifierKey::SPMM_ALT);
+      mButtonPressCallback({bnum, mModifiers});
     } else {
-      mButtonReleaseCallback({bnum});
+      if (bnum == SPMB_SHIFT)
+        mModifiers.remove(SpaceMouseModifierKey::SPMM_SHIFT);
+      else if (bnum == SPMB_CTRL)
+        mModifiers.remove(SpaceMouseModifierKey::SPMM_CTRL);
+      else if (bnum == SPMB_ALT)
+        mModifiers.remove(SpaceMouseModifierKey::SPMM_ALT);
+      mButtonReleaseCallback({bnum, mModifiers});
     }
   }
 }
@@ -314,9 +326,21 @@ void SpaceMouse3DX::ProcessEvent(const ConnexionDeviceState *state) {
 
       mLastButtonConfig = state->buttons;
       if (pressed) {
-        mButtonPressCallback({bnum});
+        if (bnum == SPMB_SHIFT)
+          mModifiers.add(SpaceMouseModifierKey::SPMM_SHIFT);
+        else if (bnum == SPMB_CTRL)
+          mModifiers.add(SpaceMouseModifierKey::SPMM_CTRL);
+        else if (bnum == SPMB_ALT)
+          mModifiers.add(SpaceMouseModifierKey::SPMM_ALT);
+        mButtonPressCallback({bnum, mModifiers});
       } else {
-        mButtonReleaseCallback({bnum});
+        if (bnum == SPMB_SHIFT)
+          mModifiers.remove(SpaceMouseModifierKey::SPMM_SHIFT);
+        else if (bnum == SPMB_CTRL)
+          mModifiers.remove(SpaceMouseModifierKey::SPMM_CTRL);
+        else if (bnum == SPMB_ALT)
+          mModifiers.remove(SpaceMouseModifierKey::SPMM_ALT);
+        mButtonReleaseCallback({bnum, mModifiers});
       }
       break;
     default:

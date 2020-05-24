@@ -58,11 +58,42 @@ enum SpaceMouseButton {
   SPMB_UNDEFINED = 14 /**< Undefined button */
 };
 
+
+enum class SpaceMouseModifierKey : int {
+  SPMM_SHIFT = 1,
+  SPMM_CTRL = 2,
+  SPMM_ALT = 4
+};
+
+class SpaceMouseModifierKeys {
+ public:
+  SpaceMouseModifierKeys() : mModifiers(SpaceMouseModifierKey(0)) {}
+  void add(SpaceMouseModifierKey key) {
+    mModifiers = SpaceMouseModifierKey(static_cast<int>(mModifiers) | static_cast<int>(key));
+  }
+  void remove(SpaceMouseModifierKey key) {
+    mModifiers = SpaceMouseModifierKey(static_cast<int>(mModifiers) & (~static_cast<int>(key)));
+  }
+  bool contains(SpaceMouseModifierKey key) const {
+    return (static_cast<int>(mModifiers) & static_cast<int>(key)) != 0;
+  }
+  bool isEmpty() const {
+    return (static_cast<int>(mModifiers) == 0);
+  }
+  SpaceMouseModifierKey modifiers() const {
+    return mModifiers;
+  }
+
+ private:
+  SpaceMouseModifierKey mModifiers;
+};
+
 /**
  * @brief Event describing the press or release of a button
  */
 struct SpaceMouseButtonEvent {
   SpaceMouseButton button; /**< The pressed button */
+  SpaceMouseModifierKeys modifierKeys;
 };
 }  // namespace spacemouse
 
@@ -116,6 +147,7 @@ class SpaceMouseAbstract {
   SpaceMouseAbstract();
   virtual ~SpaceMouseAbstract();
   bool mInitialized;
+  SpaceMouseModifierKeys mModifiers;
   std::function<void(SpaceMouseMoveEvent)> mMoveCallback;
   std::function<void(SpaceMouseButtonEvent)> mButtonPressCallback;
   std::function<void(SpaceMouseButtonEvent)> mButtonReleaseCallback;

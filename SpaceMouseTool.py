@@ -52,6 +52,11 @@ class SpaceMouseTool(Tool):
         # undefined button
         SPMB_UNDEFINED = 14  # Undefined button * /
 
+    class SpaceMouseModifierKey(IntEnum):
+        SPMM_SHIFT = 1
+        SPMM_CTRL = 2
+        SPMM_ALT = 4
+
     def __init__(self):
         super().__init__()
         SpaceMouseTool._scene = Application.getInstance().getController().getScene()
@@ -117,6 +122,39 @@ class SpaceMouseTool(Tool):
         camera.setTransformation(camera.getLocalTransformation().preMultiply(rotMat))
 
     @staticmethod
+    def _setCameraRotation(view: str) -> None:
+        controller = Application.getInstance().getController()
+
+        if view == "TOP":
+            controller.setCameraRotation("y", 90)
+        elif view == "RIGHT":
+            controller.setCameraRotation("x", -90)
+        elif view == "FRONT":
+            controller.setCameraRotation("home", 0)
+        elif view == "BOTTOM":
+            # this work around isn't pretty but setCameraRotation's implementation is quite strange
+            camera = SpaceMouseTool._scene.getActiveCamera()
+            if not camera:
+                return
+            camera.setZoomFactor(camera.getDefaultZoomFactor())
+            camera.setPosition(Vector(0, -800, 0))
+            SpaceMouseTool._cameraTool.setOrigin(Vector(0, 100, .1))
+            camera.lookAt(Vector(0, 100, .1), Vector(0, 1, 0))
+        elif view == "LEFT":
+            controller.setCameraRotation("x", 90)
+        elif view == "REAR":
+            # this work around isn't pretty but setCameraRotation's implementation is quite strange
+            camera = SpaceMouseTool._scene.getActiveCamera()
+            if not camera:
+                return
+            camera.setZoomFactor(camera.getDefaultZoomFactor())
+            SpaceMouseTool._cameraTool.setOrigin(Vector(0, 100, 0))
+            camera.setPosition(Vector(0, 100, -700))
+            SpaceMouseTool._cameraTool.rotateCamera(0, 0)
+        else:
+            pass
+
+    @staticmethod
     def spacemouse_move_callback(
             tx: int, ty: int, tz: int,
             angle: float, axisX: float, axisY: float, axisZ: float) -> None:
@@ -125,19 +163,28 @@ class SpaceMouseTool(Tool):
         SpaceMouseTool._rotateCamera(angle, axisX, axisY, axisZ)
 
     @staticmethod
-    def spacemouse_button_press_callback(button: int):
-        controller = Application.getInstance().getController()
-        if(button == SpaceMouseTool.SpaceMouseButton.SPMB_TOP):
-            controller.setCameraRotation("y", 90)
-        elif(button == SpaceMouseTool.SpaceMouseButton.SPMB_RIGHT):
-            controller.setCameraRotation("x", -90)
+    def spacemouse_button_press_callback(button: int, modifiers: int):
+        if button == SpaceMouseTool.SpaceMouseButton.SPMB_TOP:
+            if (modifiers & SpaceMouseTool.SpaceMouseModifierKey.SPMM_SHIFT) != 0:
+                SpaceMouseTool._setCameraRotation("BOTTOM")
+            else:
+                SpaceMouseTool._setCameraRotation("TOP")
+        elif button == SpaceMouseTool.SpaceMouseButton.SPMB_RIGHT:
+            if (modifiers & SpaceMouseTool.SpaceMouseModifierKey.SPMM_SHIFT) != 0:
+                SpaceMouseTool._setCameraRotation("LEFT")
+            else:
+                SpaceMouseTool._setCameraRotation("RIGHT")
         elif(button == SpaceMouseTool.SpaceMouseButton.SPMB_FRONT):
-            controller.setCameraRotation("home", 0)
-        Logger.log("d", "Press " + str(button))
+            if (modifiers & SpaceMouseTool.SpaceMouseModifierKey.SPMM_SHIFT) != 0:
+                SpaceMouseTool._setCameraRotation("REAR")
+            else:
+                SpaceMouseTool._setCameraRotation("FRONT")
+
+        Logger.log("d", "Press " + str(button) + " " + str(modifiers))
 
     @staticmethod
-    def spacemouse_button_release_callback(button: int):
-        Logger.log("d", "Release " + str(button))
+    def spacemouse_button_release_callback(button: int, modifiers: int):
+        Logger.log("d", "Release " + str(button) + " " + str(modifiers))
 
 
 def main():
