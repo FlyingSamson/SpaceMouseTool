@@ -59,16 +59,10 @@ enum SpaceMouseButton {
 };
 
 /**
- * @brief Event describing the press of a button
+ * @brief Event describing the press or release of a button
  */
-struct SpaceMouseButtonPressEvent {
+struct SpaceMouseButtonEvent {
   SpaceMouseButton button; /**< The pressed button */
-};
-/**
- * @brief Event describing the release of a button
- */
-struct SpaceMouseButtonReleaseEvent {
-  SpaceMouseButton button; /**< The released button */
 };
 }  // namespace spacemouse
 
@@ -107,14 +101,14 @@ class SpaceMouseAbstract {
    *  @note The callback might get called from another thread then the one that
    *  instantiated the daemon
    */
-  void setButtonPressCallback(std::function<void(SpaceMouseButtonPressEvent)> callback) {
+  void setButtonPressCallback(std::function<void(SpaceMouseButtonEvent)> callback) {
     mButtonPressCallback = callback;
   }
   /** @brief Sets the callback for button released events
    *  @note The callback might get called from another thread then the one that
    *  instantiated the daemon
    */
-  void setButtonReleaseCallback(std::function<void(SpaceMouseButtonReleaseEvent)> callback) {
+  void setButtonReleaseCallback(std::function<void(SpaceMouseButtonEvent)> callback) {
     mButtonReleaseCallback = callback;
   }
 
@@ -123,8 +117,8 @@ class SpaceMouseAbstract {
   virtual ~SpaceMouseAbstract();
   bool mInitialized;
   std::function<void(SpaceMouseMoveEvent)> mMoveCallback;
-  std::function<void(SpaceMouseButtonPressEvent)> mButtonPressCallback;
-  std::function<void(SpaceMouseButtonReleaseEvent)> mButtonReleaseCallback;
+  std::function<void(SpaceMouseButtonEvent)> mButtonPressCallback;
+  std::function<void(SpaceMouseButtonEvent)> mButtonReleaseCallback;
 };
 }  // namespace spacemouse
 
@@ -233,14 +227,14 @@ class SpaceMouseDaemon {
    *  @note The callback might get called from another thread then the one that
    *  instantiated the daemon
    */
-  void setButtonPressCallback(std::function<void(SpaceMouseButtonPressEvent)> callback) {
+  void setButtonPressCallback(std::function<void(SpaceMouseButtonEvent)> callback) {
     spaceMouse->setButtonPressCallback(callback);
   }
   /** @brief Sets the callback for button released events
    *  @note The callback might get called from another thread then the one that
    *  instantiated the daemon
    */
-  void setButtonReleaseCallback(std::function<void(SpaceMouseButtonReleaseEvent)> callback) {
+  void setButtonReleaseCallback(std::function<void(SpaceMouseButtonEvent)> callback) {
     spaceMouse->setButtonReleaseCallback(callback);
   }
 

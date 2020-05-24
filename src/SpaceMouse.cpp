@@ -11,8 +11,8 @@ namespace spacemouse {
 SpaceMouseAbstract::SpaceMouseAbstract()
     : mInitialized(false),
       mMoveCallback([](SpaceMouseMoveEvent) {}),
-      mButtonPressCallback([](SpaceMouseButtonPressEvent) {}),
-      mButtonReleaseCallback([](SpaceMouseButtonReleaseEvent) {}) {}
+      mButtonPressCallback([](SpaceMouseButtonEvent) {}),
+      mButtonReleaseCallback([](SpaceMouseButtonEvent) {}) {}
 
 SpaceMouseAbstract::~SpaceMouseAbstract() {}
 

@@ -31,7 +31,7 @@ static PyObject* start_spacemouse_daemon(PyObject* /*self*/, PyObject* args) {
       PyGILState_Release(gil);
     });
     smDaemon.setButtonPressCallback(
-        [pyButtonPressCallback](spacemouse::SpaceMouseButtonPressEvent e) -> void {
+        [pyButtonPressCallback](spacemouse::SpaceMouseButtonEvent e) -> void {
           PyGILState_STATE gil = PyGILState_Ensure();
 
           PyObject* arglist = Py_BuildValue("(i)", (int)e.button);
@@ -42,7 +42,7 @@ static PyObject* start_spacemouse_daemon(PyObject* /*self*/, PyObject* args) {
           PyGILState_Release(gil);
         });
     smDaemon.setButtonReleaseCallback(
-        [pyButtonReleaseCallback](spacemouse::SpaceMouseButtonReleaseEvent e) -> void {
+        [pyButtonReleaseCallback](spacemouse::SpaceMouseButtonEvent e) -> void {
           PyGILState_STATE gil = PyGILState_Ensure();
 
           PyObject* arglist = Py_BuildValue("(i)", (int)e.button);
