@@ -8,6 +8,7 @@ from PyQt5 import QtCore
 from PyQt5.QtGui import QGuiApplication
 
 from enum import IntEnum
+import math
 import time
 
 import platform
@@ -118,8 +119,7 @@ class SpaceMouseTool(Tool):
 
         # rotation matrix around the axis
         rotMat = Matrix()
-        rotMat.setByRotationAxis(
-            angle * SpaceMouseTool._rotScale, axisInWorldSpace, rotOrigin.getData())
+        rotMat.setByRotationAxis(angle, axisInWorldSpace, rotOrigin.getData())
 
         # apply transformation
         camera.setTransformation(camera.getLocalTransformation().preMultiply(rotMat))
@@ -163,7 +163,7 @@ class SpaceMouseTool(Tool):
             angle: float, axisX: float, axisY: float, axisZ: float) -> None:
         # translate and zoom:
         SpaceMouseTool._translateCamera(tx, ty, tz)
-        SpaceMouseTool._rotateCamera(angle, axisX, axisY, axisZ)
+        SpaceMouseTool._rotateCamera(angle * SpaceMouseTool._rotScale, axisX, axisY, axisZ)
 
     @staticmethod
     def spacemouse_button_press_callback(button: int, modifiers: int):
@@ -191,6 +191,11 @@ class SpaceMouseTool(Tool):
                 SpaceMouseTool._setCameraRotation("REAR")
             else:
                 SpaceMouseTool._setCameraRotation("FRONT")
+        elif(button == SpaceMouseTool.SpaceMouseButton.SPMB_ROLL_CW):
+            if (modifiers & SpaceMouseTool.SpaceMouseModifierKey.SPMM_SHIFT) != 0:
+                SpaceMouseTool._rotateCamera(math.pi/2, 0, 1, 0)
+            else:
+                SpaceMouseTool._rotateCamera(-math.pi/2, 0, 1, 0)
 
         Logger.log("d", "Press " + str(button) + " " + str(modifiers))
 
