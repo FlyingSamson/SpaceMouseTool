@@ -4,6 +4,7 @@ from UM.Logger import Logger
 from UM.Math.Matrix import Matrix
 from UM.Math.Vector import Vector
 
+from enum import IntEnum
 import time
 
 import platform
@@ -21,6 +22,35 @@ class SpaceMouseTool(Tool):
     _zoomScale = 0.00005
     _zoomMin = -0.495  # same as used in CameraTool
     _zoomMax = 1       # same as used in CameraTool
+
+    class SpaceMouseButton(IntEnum):
+        # buttons on the 3DConnexion Spacemouse Wireles Pro:
+        # view buttons:
+        SPMB_TOP = 0         # Top view button
+        SPMB_RIGHT = 1       # Right view button
+        SPMB_FRONT = 2       # Front view button
+        SPMB_ROLL_CW = 3     # Roll the view clock-wise in the plane orthogonal
+                             # to the direction of view
+        SPMB_LOCK_ROT = 4    # Lock rotation
+        # configurable buttons 1, 2, 3, and 4
+        SPMB_1 = 5           # Configurable button 1 * /
+        SPMB_2 = 6           # Configurable button 2 * /
+        SPMB_3 = 7           # Configurable button 3 * /
+        SPMB_4 = 8           # Configurable button 4 * /
+        # modifier keys
+        SPMB_ESC = 9         # Escape key * /
+        SPMB_SHIFT = 10      # Shift key * /
+        SPMB_CTRL = 11       # Control key * /
+        SPMB_ALT = 12        # Alternate key * /
+        # menu button
+        SPMB_MENU = 12       # Menu button * /
+        # fit to screen button
+        SPMB_FIT = 13        # Fit shown objects to screen * /
+
+        # if you own another spacemouse feel free to add further buttons
+
+        # undefined button
+        SPMB_UNDEFINED = 14  # Undefined button * /
 
     def __init__(self):
         super().__init__()
@@ -94,9 +124,15 @@ class SpaceMouseTool(Tool):
         SpaceMouseTool._translateCamera(tx, ty, tz)
         SpaceMouseTool._rotateCamera(angle, axisX, axisY, axisZ)
 
-
     @staticmethod
     def spacemouse_button_press_callback(button: int):
+        controller = Application.getInstance().getController()
+        if(button == SpaceMouseTool.SpaceMouseButton.SPMB_TOP):
+            controller.setCameraRotation("y", 90)
+        elif(button == SpaceMouseTool.SpaceMouseButton.SPMB_RIGHT):
+            controller.setCameraRotation("x", -90)
+        elif(button == SpaceMouseTool.SpaceMouseButton.SPMB_FRONT):
+            controller.setCameraRotation("home", 0)
         Logger.log("d", "Press " + str(button))
 
     @staticmethod
