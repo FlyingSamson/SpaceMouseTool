@@ -4,6 +4,9 @@ from UM.Logger import Logger
 from UM.Math.Matrix import Matrix
 from UM.Math.Vector import Vector
 
+from PyQt5 import QtCore
+from PyQt5.QtGui import QGuiApplication
+
 from enum import IntEnum
 import time
 
@@ -164,6 +167,15 @@ class SpaceMouseTool(Tool):
 
     @staticmethod
     def spacemouse_button_press_callback(button: int, modifiers: int):
+        keyboardModifiers = QGuiApplication.queryKeyboardModifiers()
+        Logger.log("d", repr(keyboardModifiers))
+        if (keyboardModifiers & QtCore.Qt.ShiftModifier) == QtCore.Qt.ShiftModifier:
+            modifiers |= SpaceMouseTool.SpaceMouseModifierKey.SPMM_SHIFT
+        if (keyboardModifiers & QtCore.Qt.ControlModifier) == QtCore.Qt.ControlModifier:
+            modifiers |= SpaceMouseTool.SpaceMouseModifierKey.SPMM_CTRL
+        if (keyboardModifiers & QtCore.Qt.AltModifier) == QtCore.Qt.ControlModifier:
+            modifiers |= SpaceMouseTool.SpaceMouseModifierKey.SPMM_ALT
+
         if button == SpaceMouseTool.SpaceMouseButton.SPMB_TOP:
             if (modifiers & SpaceMouseTool.SpaceMouseModifierKey.SPMM_SHIFT) != 0:
                 SpaceMouseTool._setCameraRotation("BOTTOM")
