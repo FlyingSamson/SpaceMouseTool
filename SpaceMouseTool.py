@@ -128,8 +128,6 @@ class SpaceMouseTool(Tool):
         # rotate camera around that axis by angle
         rotOrigin = SpaceMouseTool._cameraTool.getOrigin()
 
-        Logger.log("d", invViewMatrix)
-
         # rotation matrix around the axis
         rotMat = Matrix()
         rotMat.setByRotationAxis(angle, axisInWorldSpace, rotOrigin.getData())
@@ -180,7 +178,6 @@ class SpaceMouseTool(Tool):
     @staticmethod
     def spacemouse_button_press_callback(button: int, modifiers: int):
         keyboardModifiers = QGuiApplication.queryKeyboardModifiers()
-        Logger.log("d", repr(keyboardModifiers))
         if (keyboardModifiers & QtCore.Qt.ShiftModifier) == QtCore.Qt.ShiftModifier:
             modifiers |= SpaceMouseTool.SpaceMouseModifierKey.SPMM_SHIFT
         if (keyboardModifiers & QtCore.Qt.ControlModifier) == QtCore.Qt.ControlModifier:
