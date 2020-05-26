@@ -2,6 +2,7 @@ from UM.Application import Application
 from UM.Tool import Tool
 from UM.Logger import Logger
 from UM.Math.Matrix import Matrix
+from UM.Math.Quaternion import Quaternion
 from UM.Math.Vector import Vector
 
 from PyQt5 import QtCore
@@ -9,7 +10,9 @@ from PyQt5.QtGui import QGuiApplication
 
 from enum import IntEnum
 import math
+import numpy as np
 import time
+
 
 import platform
 if platform.system() == "Darwin":
@@ -17,6 +20,10 @@ if platform.system() == "Darwin":
 elif platform.system() == "Linux":
     from .lib.x86_64.pyspacemouse import start_spacemouse_daemon
 
+
+def homogenize(vec4: np.array) -> np.array:  # vec3
+    vec4 /= vec4[3]
+    return vec4[0:3]
 
 class SpaceMouseTool(Tool):
     _scene = None
@@ -106,23 +113,55 @@ class SpaceMouseTool(Tool):
         # space mouse system: x: right, y: front, z: down
         # camera system:     x: right, y: up,    z: front
         # i.e. rotate the vector about x by 90 degrees in mathematical positive sense
-        axisInViewSpace = Vector(-axisX, axisZ, -axisY)
+        axisInViewSpace = np.array([-axisX, axisZ, -axisY, 1])
 
         # get inverse view matrix
-        invViewMatrix = camera.getWorldOrientation().toMatrix()
+        invViewMatrix = camera.getWorldTransformation().getData()
 
         # compute rotation axis in world space
-        axisInWorldSpace = axisInViewSpace.preMultiply(invViewMatrix)
+        axisInWorldSpace = homogenize(np.dot(invViewMatrix, axisInViewSpace))
+        originInWorldSpace = homogenize(np.dot(invViewMatrix, np.array([0, 0, 0, 1])))
+
+        axisInWorldSpace = axisInWorldSpace - originInWorldSpace
+        axisInWorldSpace = Vector(data=axisInWorldSpace)
 
         # rotate camera around that axis by angle
+        origin = camera.getWorldPosition()
         rotOrigin = SpaceMouseTool._cameraTool.getOrigin()
+        camToOrigin = origin - rotOrigin
+
+        Logger.log("d", invViewMatrix)
+
+        rotMat = Matrix()
+        rotMat = Quaternion.fromAngleAxis(angle, axisInWorldSpace).toMatrix()
+        #rotMat.setByRotationAxis(angle * 0.0001, Vector(data=axisInWorldSpace))
+
+        # translation matrix to shift camera to origin i.e. 0,0,0 in world space
+        transToOrigMat = Matrix()
+        transToOrigMat.setByTranslation(-origin)
+
+        # compute new position for camera
+        newPos = camToOrigin.preMultiply(rotMat) + rotOrigin
+
+        # translation matrix to shift camera to new position
+        transToNewPosMat = Matrix()
+        transToNewPosMat.setByTranslation(newPos)
+
+        trafo = transToOrigMat               # shift to origin
+        trafo.preMultiply(rotMat)            # rotate camera in place
+        trafo.preMultiply(transToNewPosMat)  # shift to new position
+
+        camera.setTransformation(camera.getLocalTransformation().preMultiply(trafo))
+
+        #euler_angles = camera.getOrientation().toMatrix().getEuler()
+        #Logger.log("d", str(euler_angles))
 
         # rotation matrix around the axis
-        rotMat = Matrix()
-        rotMat.setByRotationAxis(angle, axisInWorldSpace, rotOrigin.getData())
+        #rotMat = Matrix()
+        #rotMat.setByRotationAxis(angle, axisInWorldSpace, rotOrigin.getData())
 
         # apply transformation
-        camera.setTransformation(camera.getLocalTransformation().preMultiply(rotMat))
+        #camera.setTransformation(camera.getLocalTransformation().preMultiply(rotMat))
 
     @staticmethod
     def _setCameraRotation(view: str) -> None:
@@ -162,7 +201,7 @@ class SpaceMouseTool(Tool):
             tx: int, ty: int, tz: int,
             angle: float, axisX: float, axisY: float, axisZ: float) -> None:
         # translate and zoom:
-        SpaceMouseTool._translateCamera(tx, ty, tz)
+        #SpaceMouseTool._translateCamera(tx, ty, tz)
         SpaceMouseTool._rotateCamera(angle * SpaceMouseTool._rotScale, axisX, axisY, axisZ)
 
     @staticmethod
