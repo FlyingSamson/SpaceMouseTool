@@ -126,43 +126,16 @@ class SpaceMouseTool(Tool):
         axisInWorldSpace = Vector(data=axisInWorldSpace)
 
         # rotate camera around that axis by angle
-        origin = camera.getWorldPosition()
         rotOrigin = SpaceMouseTool._cameraTool.getOrigin()
-        camToOrigin = origin - rotOrigin
 
         Logger.log("d", invViewMatrix)
 
-        rotMat = Matrix()
-        rotMat = Quaternion.fromAngleAxis(angle, axisInWorldSpace).toMatrix()
-        #rotMat.setByRotationAxis(angle * 0.0001, Vector(data=axisInWorldSpace))
-
-        # translation matrix to shift camera to origin i.e. 0,0,0 in world space
-        transToOrigMat = Matrix()
-        transToOrigMat.setByTranslation(-origin)
-
-        # compute new position for camera
-        newPos = camToOrigin.preMultiply(rotMat) + rotOrigin
-
-        # translation matrix to shift camera to new position
-        transToNewPosMat = Matrix()
-        transToNewPosMat.setByTranslation(newPos)
-
-        trafo = transToOrigMat               # shift to origin
-        trafo.preMultiply(rotMat)            # rotate camera in place
-        trafo.preMultiply(transToNewPosMat)  # shift to new position
-
-        camera.setTransformation(camera.getLocalTransformation().preMultiply(trafo))
-
-        #euler_angles = camera.getOrientation().toMatrix().getEuler()
-        #Logger.log("d", str(euler_angles))
-
         # rotation matrix around the axis
-        #rotMat = Matrix()
-        #rotMat.setByRotationAxis(angle, axisInWorldSpace, rotOrigin.getData())
+        rotMat = Matrix()
+        rotMat.setByRotationAxis(angle, axisInWorldSpace, rotOrigin.getData())
+        camera.setTransformation(camera.getLocalTransformation().preMultiply(rotMat))
 
         # apply transformation
-        #camera.setTransformation(camera.getLocalTransformation().preMultiply(rotMat))
-
     @staticmethod
     def _setCameraRotation(view: str) -> None:
         controller = Application.getInstance().getController()
