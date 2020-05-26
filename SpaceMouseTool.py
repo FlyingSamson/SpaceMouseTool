@@ -172,7 +172,7 @@ class SpaceMouseTool(Tool):
             tx: int, ty: int, tz: int,
             angle: float, axisX: float, axisY: float, axisZ: float) -> None:
         # translate and zoom:
-        #SpaceMouseTool._translateCamera(tx, ty, tz)
+        SpaceMouseTool._translateCamera(tx, ty, tz)
         SpaceMouseTool._rotateCamera(angle * SpaceMouseTool._rotScale, axisX, axisY, axisZ)
 
     @staticmethod
