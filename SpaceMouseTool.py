@@ -203,13 +203,16 @@ class SpaceMouseTool(Tool):
                             else min(minY, cornerInViewSpace.y)
                         maxY = cornerInViewSpace.y if maxY is None\
                             else max(maxY, cornerInViewSpace.y)
-            zoomFactorHor = (1 + SpaceMouseTool._fitBorderPercentage) * (maxX-minX) / 2.\
-                / camera.getViewportWidth() - 0.5
-            zoomFactorVer = (1 + SpaceMouseTool._fitBorderPercentage) * (maxY-minY) / 2.\
-                / camera.getViewportHeight() - 0.5
+            widthWithBorder = (1 + 2 * SpaceMouseTool._fitBorderPercentage) * (maxX-minX)
+            heightWithBorder = (1 + 2 * SpaceMouseTool._fitBorderPercentage) * (maxY-minY)
+
+            # set zoom factor in such a way, that the width or height with border fills the width
+            # or height of the viewport, respectively
+            zoomFactorHor = widthWithBorder / 2. / camera.getViewportWidth() - 0.5
+            zoomFactorVer = heightWithBorder / 2. / camera.getViewportHeight() - 0.5
+
+            # use max as zoom factor get more negative if we zoom into the scene
             zoomFactor = max(zoomFactorHor, zoomFactorVer)
-            Logger.log("d", "Zoomfactor is " + str(camera.getZoomFactor()))
-            Logger.log("d", "New zoomfactor is " + str(zoomFactor))
             camera.setZoomFactor(zoomFactor)
 
     @staticmethod
