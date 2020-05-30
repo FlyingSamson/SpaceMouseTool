@@ -154,7 +154,6 @@ class SpaceMouseTool(Tool):
 
         # get center in viewspace:
         viewMatrix = camera.getInverseWorldTransformation()
-        Logger.log("d", viewMatrix)
         centerInViewSpace = homogenize(np.dot(viewMatrix.getData(),
                                               np.append(centerAabb.getData(), 1)))
         # translate camera in xy-plane such that it is looking on the center
@@ -294,13 +293,3 @@ class SpaceMouseTool(Tool):
     @staticmethod
     def spacemouse_button_release_callback(button: int, modifiers: int):
         Logger.log("d", "Release " + str(button) + " " + str(modifiers))
-
-
-def main():
-    spacemousetool = SpaceMouseTool()
-
-    time.sleep(10)
-
-
-if __name__ == "__main__":
-    main()
