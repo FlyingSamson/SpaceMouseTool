@@ -142,51 +142,55 @@ class SpaceMouseTool(Tool):
             Logger.log("d", "No camera available")
             return
 
-        Logger.log("d", "Fitting")
-        if Selection.hasSelection():
-            aabb = Selection.getBoundingBox()
-            if camera.isPerspective():
-                pass
-            else:
-                # project each point of the aabb in screen space:
-                minAabb = aabb.minimum  # type: Vector
-                maxAabb = aabb.maximum  # type: Vector
-                centerAabb = aabb.center  # type: Vector
+        if not Selection.hasSelection():
+            Logger.log("d", "Nothing selected to fit")
+            return
 
-                # get center in viewspace:
-                viewMatrix = camera.getInverseWorldTransformation()
-                Logger.log("d", viewMatrix)
-                centerInViewSpace = homogenize(np.dot(viewMatrix.getData(),
-                                                      np.append(centerAabb.getData(), 1)))
-                # translate camera in xy-plane such that it is looking on the center
-                centerInViewSpace[2] = 0
-                centerInViewSpace = Vector(data=centerInViewSpace)
-                camera.translate(centerInViewSpace)
-                Logger.log("d", str(camera.getViewportWidth()) + ", " + str(camera.getViewportHeight()))
+        aabb = Selection.getBoundingBox()
+        minAabb = aabb.minimum  # type: Vector
+        maxAabb = aabb.maximum  # type: Vector
+        centerAabb = aabb.center  # type: Vector
 
-                minX = None
-                maxX = None
-                minY = None
-                maxY = None
-                for x in [minAabb.x, maxAabb.x]:
-                    for y in [minAabb.y, maxAabb.y]:
-                        for z in [minAabb.z, maxAabb.z]:
-                            # get corner of aabb in view space
-                            cornerInViewSpace = homogenize(np.dot(viewMatrix.getData(),
-                                                           np.array([x, y, z, 1])))
-                            cornerInViewSpace = Vector(data=cornerInViewSpace)
-                            minX = cornerInViewSpace.x if minX is None else min(minX, cornerInViewSpace.x)
-                            maxX = cornerInViewSpace.x if maxX is None else max(maxX, cornerInViewSpace.x)
-                            minY = cornerInViewSpace.y if minY is None else min(minY, cornerInViewSpace.y)
-                            maxY = cornerInViewSpace.y if maxY is None else max(maxY, cornerInViewSpace.y)
-                zoomFactorHor = (1 + SpaceMouseTool._fitBorderPercentage) * (maxX-minX) / 2. / camera.getViewportWidth() - 0.5
-                zoomFactorVer = (1 + SpaceMouseTool._fitBorderPercentage) * (maxY-minY) / 2. / camera.getViewportHeight() - 0.5
-                zoomFactor = max(zoomFactorHor, zoomFactorVer)
-                Logger.log("d", "Zoomfactor is " + str(camera.getZoomFactor()))
-                Logger.log("d", "New zoomfactor is " + str(zoomFactor))
-                camera.setZoomFactor(zoomFactor)
-        else:
+        # get center in viewspace:
+        viewMatrix = camera.getInverseWorldTransformation()
+        Logger.log("d", viewMatrix)
+        centerInViewSpace = homogenize(np.dot(viewMatrix.getData(),
+                                              np.append(centerAabb.getData(), 1)))
+        # translate camera in xy-plane such that it is looking on the center
+        centerInViewSpace[2] = 0
+        centerInViewSpace = Vector(data=centerInViewSpace)
+        camera.translate(centerInViewSpace)
+
+        if camera.isPerspective():
             pass
+        else:
+            minX = None
+            maxX = None
+            minY = None
+            maxY = None
+            for x in [minAabb.x, maxAabb.x]:
+                for y in [minAabb.y, maxAabb.y]:
+                    for z in [minAabb.z, maxAabb.z]:
+                        # get corner of aabb in view space
+                        cornerInViewSpace = homogenize(np.dot(viewMatrix.getData(),
+                                                       np.array([x, y, z, 1])))
+                        cornerInViewSpace = Vector(data=cornerInViewSpace)
+                        minX = cornerInViewSpace.x if minX is None\
+                            else min(minX, cornerInViewSpace.x)
+                        maxX = cornerInViewSpace.x if maxX is None\
+                            else max(maxX, cornerInViewSpace.x)
+                        minY = cornerInViewSpace.y if minY is None\
+                            else min(minY, cornerInViewSpace.y)
+                        maxY = cornerInViewSpace.y if maxY is None\
+                            else max(maxY, cornerInViewSpace.y)
+            zoomFactorHor = (1 + SpaceMouseTool._fitBorderPercentage) * (maxX-minX) / 2.\
+                / camera.getViewportWidth() - 0.5
+            zoomFactorVer = (1 + SpaceMouseTool._fitBorderPercentage) * (maxY-minY) / 2.\
+                / camera.getViewportHeight() - 0.5
+            zoomFactor = max(zoomFactorHor, zoomFactorVer)
+            Logger.log("d", "Zoomfactor is " + str(camera.getZoomFactor()))
+            Logger.log("d", "New zoomfactor is " + str(zoomFactor))
+            camera.setZoomFactor(zoomFactor)
 
     @staticmethod
     def _setCameraRotation(view: str) -> None:
