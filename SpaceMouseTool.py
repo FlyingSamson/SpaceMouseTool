@@ -136,6 +136,7 @@ class SpaceMouseTool(Tool):
         rotMat.setByRotationAxis(angle, axisInWorldSpace, rotOrigin.getData())
         camera.setTransformation(camera.getLocalTransformation().preMultiply(rotMat))
 
+    @staticmethod
     def _fitSelection() -> None:
         camera = SpaceMouseTool._scene.getActiveCamera()
         if not camera or not camera.isEnabled():
@@ -162,7 +163,26 @@ class SpaceMouseTool(Tool):
         camera.translate(centerInViewSpace)
 
         if camera.isPerspective():
-            pass
+            # compute the smaller of the two field of views
+            aspect = camera.getViewportWidth() / camera.getViewportHeight()
+            halfFovY = math.radians(30) / 2.  # from Camera.py _updatePerspectiveMarix
+            halfFovX = math.atan(aspect * math.tan(halfFovY))
+            halfFov = min(halfFovX, halfFovY)
+
+            # radius of the bounding sphere containing the bounding box
+            boundingSphereRadius = (centerAabb - minAabb).length()
+
+            # compute distance of camera to center
+            # (sin, as we use a point tangential to the bounding sphere)
+            distCamCenter = boundingSphereRadius / math.sin(halfFov)
+
+            # unit vector pointing from center to camera
+            centerToCam = (camera.getWorldPosition() - centerAabb).normalized()
+
+            # compute new position for camera
+            newCamPos = centerAabb + centerToCam * distCamCenter
+
+            camera.setPosition(newCamPos)
         else:
             minX = None
             maxX = None
