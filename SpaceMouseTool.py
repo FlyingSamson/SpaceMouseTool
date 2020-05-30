@@ -31,7 +31,7 @@ class SpaceMouseTool(Tool):
     _scene = None
     _cameraTool = None
     _rotScale = 0.0001
-    _transScale = 0.05
+    _transScale = 0.025
     _zoomScale = 0.00005
     _zoomMin = -0.495  # same as used in CameraTool
     _zoomMax = 1       # same as used in CameraTool
