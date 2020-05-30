@@ -1,9 +1,10 @@
 from UM.Application import Application
-from UM.Tool import Tool
 from UM.Logger import Logger
 from UM.Math.Matrix import Matrix
-from UM.Math.Quaternion import Quaternion
 from UM.Math.Vector import Vector
+from UM.Scene.Selection import Selection
+from UM.Tool import Tool
+
 
 from PyQt5 import QtCore
 from PyQt5.QtGui import QGuiApplication
@@ -25,6 +26,7 @@ def homogenize(vec4: np.array) -> np.array:  # vec3
     vec4 /= vec4[3]
     return vec4[0:3]
 
+
 class SpaceMouseTool(Tool):
     _scene = None
     _cameraTool = None
@@ -33,6 +35,7 @@ class SpaceMouseTool(Tool):
     _zoomScale = 0.00005
     _zoomMin = -0.495  # same as used in CameraTool
     _zoomMax = 1       # same as used in CameraTool
+    _fitBorderPercentage = 0.1
 
     class SpaceMouseButton(IntEnum):
         # buttons on the 3DConnexion Spacemouse Wireles Pro:
@@ -133,7 +136,58 @@ class SpaceMouseTool(Tool):
         rotMat.setByRotationAxis(angle, axisInWorldSpace, rotOrigin.getData())
         camera.setTransformation(camera.getLocalTransformation().preMultiply(rotMat))
 
-        # apply transformation
+    def _fitSelection() -> None:
+        camera = SpaceMouseTool._scene.getActiveCamera()
+        if not camera or not camera.isEnabled():
+            Logger.log("d", "No camera available")
+            return
+
+        Logger.log("d", "Fitting")
+        if Selection.hasSelection():
+            aabb = Selection.getBoundingBox()
+            if camera.isPerspective():
+                pass
+            else:
+                # project each point of the aabb in screen space:
+                minAabb = aabb.minimum  # type: Vector
+                maxAabb = aabb.maximum  # type: Vector
+                centerAabb = aabb.center  # type: Vector
+
+                # get center in viewspace:
+                viewMatrix = camera.getInverseWorldTransformation()
+                Logger.log("d", viewMatrix)
+                centerInViewSpace = homogenize(np.dot(viewMatrix.getData(),
+                                                      np.append(centerAabb.getData(), 1)))
+                # translate camera in xy-plane such that it is looking on the center
+                centerInViewSpace[2] = 0
+                centerInViewSpace = Vector(data=centerInViewSpace)
+                camera.translate(centerInViewSpace)
+                Logger.log("d", str(camera.getViewportWidth()) + ", " + str(camera.getViewportHeight()))
+
+                minX = None
+                maxX = None
+                minY = None
+                maxY = None
+                for x in [minAabb.x, maxAabb.x]:
+                    for y in [minAabb.y, maxAabb.y]:
+                        for z in [minAabb.z, maxAabb.z]:
+                            # get corner of aabb in view space
+                            cornerInViewSpace = homogenize(np.dot(viewMatrix.getData(),
+                                                           np.array([x, y, z, 1])))
+                            cornerInViewSpace = Vector(data=cornerInViewSpace)
+                            minX = cornerInViewSpace.x if minX is None else min(minX, cornerInViewSpace.x)
+                            maxX = cornerInViewSpace.x if maxX is None else max(maxX, cornerInViewSpace.x)
+                            minY = cornerInViewSpace.y if minY is None else min(minY, cornerInViewSpace.y)
+                            maxY = cornerInViewSpace.y if maxY is None else max(maxY, cornerInViewSpace.y)
+                zoomFactorHor = (1 + SpaceMouseTool._fitBorderPercentage) * (maxX-minX) / 2. / camera.getViewportWidth() - 0.5
+                zoomFactorVer = (1 + SpaceMouseTool._fitBorderPercentage) * (maxY-minY) / 2. / camera.getViewportHeight() - 0.5
+                zoomFactor = max(zoomFactorHor, zoomFactorVer)
+                Logger.log("d", "Zoomfactor is " + str(camera.getZoomFactor()))
+                Logger.log("d", "New zoomfactor is " + str(zoomFactor))
+                camera.setZoomFactor(zoomFactor)
+        else:
+            pass
+
     @staticmethod
     def _setCameraRotation(view: str) -> None:
         controller = Application.getInstance().getController()
@@ -195,16 +249,18 @@ class SpaceMouseTool(Tool):
                 SpaceMouseTool._setCameraRotation("LEFT")
             else:
                 SpaceMouseTool._setCameraRotation("RIGHT")
-        elif(button == SpaceMouseTool.SpaceMouseButton.SPMB_FRONT):
+        elif button == SpaceMouseTool.SpaceMouseButton.SPMB_FRONT:
             if (modifiers & SpaceMouseTool.SpaceMouseModifierKey.SPMM_SHIFT) != 0:
                 SpaceMouseTool._setCameraRotation("REAR")
             else:
                 SpaceMouseTool._setCameraRotation("FRONT")
-        elif(button == SpaceMouseTool.SpaceMouseButton.SPMB_ROLL_CW):
+        elif button == SpaceMouseTool.SpaceMouseButton.SPMB_ROLL_CW:
             if (modifiers & SpaceMouseTool.SpaceMouseModifierKey.SPMM_SHIFT) != 0:
                 SpaceMouseTool._rotateCamera(math.pi/2, 0, 1, 0)
             else:
                 SpaceMouseTool._rotateCamera(-math.pi/2, 0, 1, 0)
+        elif button == SpaceMouseTool.SpaceMouseButton.SPMB_FIT:
+            SpaceMouseTool._fitSelection()
 
         Logger.log("d", "Press " + str(button) + " " + str(modifiers))
 
