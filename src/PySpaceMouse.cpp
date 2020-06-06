@@ -4,6 +4,29 @@
 
 extern "C" {
 
+static PyObject* set_logger(PyObject* /*self*/, PyObject* args) {
+  PyObject* pyLogFun;
+  if (!PyArg_ParseTuple(args, "O", &pyLogFun))
+    return nullptr;
+  if (!PyCallable_Check(pyLogFun)) {
+    PyErr_SetString(PyExc_TypeError, "First argument (logFun) is not a function!");
+  } else {
+    spacemouse::logFun = std::function<void(const char*)>([pyLogFun](const char* string) {
+      PyGILState_STATE gil = PyGILState_Ensure();
+
+      PyObject* arglist = Py_BuildValue("(s)", string);
+      PyObject* result = PyEval_CallObject(pyLogFun, arglist);
+
+      Py_DECREF(arglist);
+      Py_XDECREF(result);
+      PyGILState_Release(gil);
+    });
+  }
+
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
 static PyObject* start_spacemouse_daemon(PyObject* /*self*/, PyObject* args) {
   PyObject *pyMoveCallback, *pyButtonPressCallback, *pyButtonReleaseCallback;
 
@@ -73,6 +96,7 @@ static const char* docString =
   "None";
 
 static PyMethodDef SpaceMouseMethods[] = {
+    {"set_logger", set_logger, METH_VARARGS, "bla"},
     {"start_spacemouse_daemon", start_spacemouse_daemon, METH_VARARGS, docString},
     {nullptr, nullptr, 0, nullptr}
 };
@@ -81,4 +105,5 @@ static struct PyModuleDef PySpaceMouseModule = {PyModuleDef_HEAD_INIT, "pyspacem
                                                 SpaceMouseMethods};
 
 PyMODINIT_FUNC PyInit_pyspacemouse(void) { return PyModule_Create(&PySpaceMouseModule); }
-}
+
+} // extern "C"

@@ -12,19 +12,24 @@ from PyQt5.QtGui import QGuiApplication
 from enum import IntEnum
 import math
 import numpy as np
-import time
-
 
 import platform
 if platform.system() == "Darwin":
-    from .lib.darwin.pyspacemouse import start_spacemouse_daemon
+    from .lib.darwin.pyspacemouse import set_logger, start_spacemouse_daemon
 elif platform.system() == "Linux":
-    from .lib.x86_64.pyspacemouse import start_spacemouse_daemon
+    from .lib.x86_64.pyspacemouse import set_logger, start_spacemouse_daemon
 
 
 def homogenize(vec4: np.array) -> np.array:  # vec3
     vec4 /= vec4[3]
     return vec4[0:3]
+
+
+def debugLog(s: str) -> None:
+    Logger.log("d", s)
+
+
+set_logger(debugLog)
 
 
 class SpaceMouseTool(Tool):

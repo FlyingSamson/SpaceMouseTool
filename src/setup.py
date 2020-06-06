@@ -4,6 +4,12 @@ import platform
 
 os.environ['CC'] = 'g++'
 
+debug = True
+
+undefList = []
+if debug:
+    undefList = ['NDEBUG']
+
 spacemouse_link_args = []
 spacemouse_static_libs = []
 spacemouse_compiler_args = ['-std=c++11', '-DWITH_SPACEMOUSE']
@@ -27,7 +33,8 @@ module = Extension(extension_dir + 'pyspacemouse',
                             'SpaceMouse.cpp'],
                    include_dirs=['.'],
                    extra_link_args=spacemouse_link_args,
-                   extra_objects=spacemouse_static_libs
+                   extra_objects=spacemouse_static_libs,
+                   undef_macros=undefList
                    )
 
 setup(name='PackageName',

@@ -5,6 +5,9 @@
 #include <memory>
 
 namespace spacemouse {
+
+extern std::function<void(const char*)> logFun;
+
 /*--------------------------------------------------------------------------*/
 /* Spacemouse events                                                        */
 /*--------------------------------------------------------------------------*/

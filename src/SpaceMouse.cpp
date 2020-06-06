@@ -5,6 +5,8 @@
 
 namespace spacemouse {
 
+std::function<void(const char*)> logFun =
+  std::function<void(const char*)>([](const char*){return;});
 /*--------------------------------------------------------------------------*/
 /* Abstract base class defining core functionality of spacemouse            */
 /*--------------------------------------------------------------------------*/
@@ -150,7 +152,7 @@ SpaceMouseSpnav &SpaceMouseSpnav::instance() {
 
 void SpaceMouseSpnav::Initialize() {
   #ifndef NDEBUG
-  std::cout << "Init Spnav" << std::endl;
+  logFun("Init Spnav");
   #endif  // NDEBUG
   if (!mInitialized) {
     auto error = spnav_open();
@@ -174,7 +176,7 @@ void SpaceMouseSpnav::Initialize() {
 
 void SpaceMouseSpnav::Close() {
   #ifndef NDEBUG
-  std::cout << "Close Spnav" << std::endl;
+  logFun("Close Spnav");
   #endif  // NDEBUG
   if (mInitialized) {
     spnav_close();
@@ -361,7 +363,7 @@ SpaceMouse3DX &SpaceMouse3DX::instance() {
 
 void SpaceMouse3DX::Initialize() {
   #ifndef NDEBUG
-  std::cout << "Init 3DX" << std::endl;
+  logFun("Init 3DX");
   #endif  // NDEBUG
   if (!mInitialized) {
     auto error = SetConnexionHandlers(handleMessage, nullptr, nullptr, true);
@@ -382,7 +384,7 @@ void SpaceMouse3DX::Initialize() {
  */
 void SpaceMouse3DX::Close() {
   #ifndef NDEBUG
-  std::cout << "Close 3DX" << std::endl;
+  logFun("Close 3DX");
   #endif  // NDEBUG
   UnregisterConnexionClient(mClientID);
   This = nullptr;
