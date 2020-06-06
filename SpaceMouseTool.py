@@ -1,3 +1,6 @@
+# Copyright (c) 2020 FlyingSamson.
+# SpaceMouseTool is released under the terms of the AGPLv3 or higher.
+
 from UM.Application import Application
 from UM.Logger import Logger
 from UM.Math.Matrix import Matrix

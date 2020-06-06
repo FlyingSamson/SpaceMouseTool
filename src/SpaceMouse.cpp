@@ -1,3 +1,6 @@
+// Copyright (c) 2020 FlyingSamson.
+// SpaceMouseTool is released under the terms of the AGPLv3 or higher.
+
 #include "SpaceMouse.hpp"
 
 #include <cmath>

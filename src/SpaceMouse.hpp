@@ -1,3 +1,6 @@
+// Copyright (c) 2020 FlyingSamson.
+// SpaceMouseTool is released under the terms of the AGPLv3 or higher.
+
 #ifndef SPACEMOUSE_HPP
 #define SPACEMOUSE_HPP
 
