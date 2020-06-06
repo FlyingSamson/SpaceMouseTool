@@ -19,11 +19,11 @@ from typing import cast
 
 import platform
 if platform.system() == "Darwin":
-    from .lib.darwin.pyspacemouse import set_logger, start_spacemouse_daemon
+    from .lib.darwin.pyspacemouse import set_logger, start_spacemouse_daemon, release_spacemouse_daemon
 elif platform.system() == "Linux":
-    from .lib.x86_64.pyspacemouse import set_logger, start_spacemouse_daemon
+    from .lib.x86_64.pyspacemouse import set_logger, start_spacemouse_daemon, release_spacemouse_daemon
 elif platform.system() == "Windows":
-    from .lib.pyspacemouse import set_logger, start_spacemouse_daemon
+    from .lib.pyspacemouse import set_logger, start_spacemouse_daemon, release_spacemouse_daemon
     from .lib.pyspacemouse import set_window_handle, process_win_event
 
 
@@ -91,6 +91,7 @@ class SpaceMouseTool(Tool):
         # init space mouse when engine was created as we require the hwnd of the
         # MainWindow on Windows
         Application.getInstance().engineCreatedSignal.connect(SpaceMouseTool._onEngineCreated)
+        Application.getInstance().applicationShuttingDown.connect(release_spacemouse_daemon)
 
     @staticmethod
     def _translateCamera(tx: int, ty: int, tz: int) -> None:
@@ -312,6 +313,7 @@ class SpaceMouseTool(Tool):
             SpaceMouseTool.spacemouse_move_callback,
             SpaceMouseTool.spacemouse_button_press_callback,
             SpaceMouseTool.spacemouse_button_release_callback)
+
 
         if platform.system() == "Windows":
             # the windows api requires the hwnd (window id)

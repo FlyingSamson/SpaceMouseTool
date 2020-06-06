@@ -366,7 +366,7 @@ void SpaceMouse3DX::Initialize() {
   logFun("Init 3DX");
   #endif  // NDEBUG
   if (!mInitialized) {
-    auto error = SetConnexionHandlers(handleMessage, nullptr, nullptr, true);
+    auto error = SetConnexionHandlers(handleMessage, nullptr, nullptr, false);
     mInitialized = (error == 0);
     mLastButtonConfig = 0;  // all buttons released
     uint8_t name[] = "test";

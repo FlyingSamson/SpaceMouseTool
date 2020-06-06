@@ -12,6 +12,8 @@ static PyObject* set_logger(PyObject* /*self*/, PyObject* args) {
     PyErr_SetString(PyExc_TypeError, "First argument (logFun) is not a function!");
   } else {
     spacemouse::logFun = std::function<void(const char*)>([pyLogFun](const char* string) {
+      if (!Py_IsInitialized())
+        return;
       PyGILState_STATE gil = PyGILState_Ensure();
 
       PyObject* arglist = Py_BuildValue("(s)", string);
@@ -43,6 +45,8 @@ static PyObject* start_spacemouse_daemon(PyObject* /*self*/, PyObject* args) {
   } else {
     auto& smDaemon = spacemouse::SpaceMouseDaemon::instance();
     smDaemon.setMoveCallback([pyMoveCallback](spacemouse::SpaceMouseMoveEvent e) -> void {
+      if (!Py_IsInitialized())
+        return;
       PyGILState_STATE gil = PyGILState_Ensure();
 
       PyObject* arglist =
@@ -55,6 +59,8 @@ static PyObject* start_spacemouse_daemon(PyObject* /*self*/, PyObject* args) {
     });
     smDaemon.setButtonPressCallback(
         [pyButtonPressCallback](spacemouse::SpaceMouseButtonEvent e) -> void {
+          if (!Py_IsInitialized())
+            return;
           PyGILState_STATE gil = PyGILState_Ensure();
 
           PyObject* arglist = Py_BuildValue("(ii)", (int)e.button, (int)e.modifierKeys.modifiers());
@@ -66,6 +72,8 @@ static PyObject* start_spacemouse_daemon(PyObject* /*self*/, PyObject* args) {
         });
     smDaemon.setButtonReleaseCallback(
         [pyButtonReleaseCallback](spacemouse::SpaceMouseButtonEvent e) -> void {
+          if (!Py_IsInitialized())
+            return;
           PyGILState_STATE gil = PyGILState_Ensure();
 
           PyObject* arglist = Py_BuildValue("(ii)", (int)e.button, (int)e.modifierKeys.modifiers());
@@ -76,6 +84,20 @@ static PyObject* start_spacemouse_daemon(PyObject* /*self*/, PyObject* args) {
           PyGILState_Release(gil);
         });
   }
+
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
+static PyObject* release_spacemouse_daemon(PyObject* /*self*/, PyObject* args) {
+  #ifndef NDEBUG
+  spacemouse::logFun("Releasing daemon");
+  #endif
+  auto& smDaemon = spacemouse::SpaceMouseDaemon::instance();
+  smDaemon.setMoveCallback([](spacemouse::SpaceMouseMoveEvent e) -> void {});
+  smDaemon.setButtonPressCallback([](spacemouse::SpaceMouseButtonEvent e) -> void {});
+  smDaemon.setButtonReleaseCallback([](spacemouse::SpaceMouseButtonEvent e) -> void {});
+  spacemouse::logFun = std::function<void(const char*)>([](const char* string) {});
 
   Py_INCREF(Py_None);
   return Py_None;
@@ -137,6 +159,7 @@ static const char* docString =
 static PyMethodDef SpaceMouseMethods[] = {
     {"set_logger", set_logger, METH_VARARGS, "bla"},
     {"start_spacemouse_daemon", start_spacemouse_daemon, METH_VARARGS, docString},
+    {"release_spacemouse_daemon", release_spacemouse_daemon, METH_NOARGS, "bla"},
 #ifdef WITH_LIB3DX_WIN
     {"set_window_handle", set_window_handle, METH_VARARGS, "bla"},
     {"process_win_event", process_win_event, METH_VARARGS, "bla"},
