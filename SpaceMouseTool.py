@@ -2,22 +2,29 @@ from UM.Application import Application
 from UM.Logger import Logger
 from UM.Math.Matrix import Matrix
 from UM.Math.Vector import Vector
+from UM.Qt.Bindings.MainWindow import MainWindow
+from UM.Qt.QtApplication import QtApplication
 from UM.Scene.Selection import Selection
 from UM.Tool import Tool
 
 
 from PyQt5 import QtCore
+from PyQt5.QtCore import QAbstractNativeEventFilter
 from PyQt5.QtGui import QGuiApplication
 
 from enum import IntEnum
 import math
 import numpy as np
+from typing import cast
 
 import platform
 if platform.system() == "Darwin":
     from .lib.darwin.pyspacemouse import set_logger, start_spacemouse_daemon
 elif platform.system() == "Linux":
     from .lib.x86_64.pyspacemouse import set_logger, start_spacemouse_daemon
+elif platform.system() == "Windows":
+    from .lib.pyspacemouse import set_logger, start_spacemouse_daemon
+    from .lib.pyspacemouse import set_window_handle, process_win_event
 
 
 def homogenize(vec4: np.array) -> np.array:  # vec3
@@ -35,9 +42,9 @@ set_logger(debugLog)
 class SpaceMouseTool(Tool):
     _scene = None
     _cameraTool = None
-    _rotScale = 0.0001
-    _transScale = 0.025
-    _zoomScale = 0.00005
+    _rotScale = 0.00005
+    _transScale = 0.015
+    _zoomScale = 0.00001
     _zoomMin = -0.495  # same as used in CameraTool
     _zoomMax = 1       # same as used in CameraTool
     _fitBorderPercentage = 0.1
@@ -80,11 +87,10 @@ class SpaceMouseTool(Tool):
         super().__init__()
         SpaceMouseTool._scene = Application.getInstance().getController().getScene()
         SpaceMouseTool._cameraTool = Application.getInstance().getController().getTool("CameraTool")
-        start_spacemouse_daemon(
-            SpaceMouseTool.spacemouse_move_callback,
-            SpaceMouseTool.spacemouse_button_press_callback,
-            SpaceMouseTool.spacemouse_button_release_callback)
-        Logger.log("d", "Initialized SpaceMouseTool")
+
+        # init space mouse when engine was created as we require the hwnd of the
+        # MainWindow on Windows
+        Application.getInstance().engineCreatedSignal.connect(SpaceMouseTool._onEngineCreated)
 
     @staticmethod
     def _translateCamera(tx: int, ty: int, tz: int) -> None:
@@ -293,8 +299,39 @@ class SpaceMouseTool(Tool):
         elif button == SpaceMouseTool.SpaceMouseButton.SPMB_FIT:
             SpaceMouseTool._fitSelection()
 
-        Logger.log("d", "Press " + str(button) + " " + str(modifiers))
+        # Logger.log("d", "Press " + str(button) + " " + str(modifiers))
 
     @staticmethod
     def spacemouse_button_release_callback(button: int, modifiers: int):
-        Logger.log("d", "Release " + str(button) + " " + str(modifiers))
+        # Logger.log("d", "Release " + str(button) + " " + str(modifiers))
+        pass
+
+    if platform.system() == "Windows":
+        _filterObj = None
+
+    @staticmethod
+    def _onEngineCreated() -> None:
+        start_spacemouse_daemon(
+            SpaceMouseTool.spacemouse_move_callback,
+            SpaceMouseTool.spacemouse_button_press_callback,
+            SpaceMouseTool.spacemouse_button_release_callback)
+
+        if platform.system() == "Windows":
+            # the windows api requires the hwnd (window id)
+            mainWindow = cast(MainWindow, QtApplication.getInstance().getMainWindow())
+            windowId = mainWindow.winId()
+            set_window_handle(windowId.ascapsule())
+
+            # windows api cannot poll for events in parallel to the qt event loop
+            # so we have pass the events to the daemon so that it can check for
+            # space mouse events
+            SpaceMouseTool._filterObj = WinEventFilterObj()
+            QtApplication.getInstance().installNativeEventFilter(SpaceMouseTool._filterObj)
+
+        Logger.log("d", "Initialized SpaceMouseTool")
+
+
+class WinEventFilterObj(QAbstractNativeEventFilter):
+    def nativeEventFilter(self, eventType, message):
+        process_win_event(message.ascapsule())
+        return False, 0

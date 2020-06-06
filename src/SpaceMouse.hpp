@@ -231,6 +231,55 @@ class SpaceMouse3DX : public SpaceMouseAbstract {
 
 #endif  // WITH_LIB3DX
 
+#ifdef WITH_LIB3DX_WIN
+/*--------------------------------------------------------------------------*/
+/* Spacemouse support using 3DX Client API                                  */
+/*--------------------------------------------------------------------------*/
+#include <windows.h>
+
+#include <future>
+#include <memory>
+#include <thread>
+
+#include "si.h"
+#include "siapp.h"
+
+#include <iostream>
+
+#pragma comment(lib, "user32.lib")
+
+namespace spacemouse {
+class SpaceMouse3DXWin : public SpaceMouseAbstract {
+ public:
+  static SpaceMouse3DXWin &instance();
+  void Initialize();
+  void Close();
+  void setWindowHandle(HWND winID) {
+    mWinID = winID;
+    char buffer[50];
+    sprintf(buffer, "Window handle: %p", mWinID);
+    logFun(buffer);
+    if(!mInitialized)
+      Initialize();
+  }
+  bool processEvent(MSG msg);
+
+
+ protected:
+  SpaceMouse3DXWin();
+  virtual ~SpaceMouse3DXWin();
+
+ private:
+  HWND mWinID;
+  SiHdl mDeviceHandle;
+
+  SpaceMouse3DXWin(const SpaceMouse3DXWin &);
+  SpaceMouse3DXWin &operator=(const SpaceMouse3DXWin &);
+};
+
+}  // namespace spacemouse
+#endif  // WITH_LIB3DX_WIN
+
 namespace spacemouse {
 /*--------------------------------------------------------------------------*/
 /* Daemon for processing spacemouse events and calling the callbacks        */
@@ -272,6 +321,16 @@ class SpaceMouseDaemon {
   void setButtonReleaseCallback(std::function<void(SpaceMouseButtonEvent)> callback) {
     spaceMouse->setButtonReleaseCallback(callback);
   }
+
+#ifdef WITH_LIB3DX_WIN
+  void setWindowHandle(HWND winID) {
+    static_cast<SpaceMouse3DXWin*>(spaceMouse)->setWindowHandle(winID);
+  }
+
+  bool processWinEvent(MSG message) {
+    return static_cast<SpaceMouse3DXWin*>(spaceMouse)->processEvent(message);
+  }
+#endif  // WITH_LIB3DX_WIN
 
  protected:
   SpaceMouseDaemon();

@@ -405,6 +405,220 @@ SpaceMouse3DX::~SpaceMouse3DX() {
 }
 #endif  // WITH_LIB3DX
 
+
+#ifdef WITH_LIB3DX_WIN
+/*--------------------------------------------------------------------------*/
+/* Spacemouse support using 3DX Client API                                  */
+/*--------------------------------------------------------------------------*/
+enum SpaceMouseButton3DXWin {
+  // buttons on the 3DConnexion Spacemouse Wireles Pro
+  SPMB_3DX_WIN_TOP = 3,
+  SPMB_3DX_WIN_RIGHT = 5,
+  SPMB_3DX_WIN_FRONT = 6,
+  SPMB_3DX_WIN_ROLL_CW = 9,
+  SPMB_3DX_WIN_LOCK_ROT = -1, // Not communicated by the api :(
+  SPMB_3DX_WIN_1 = -2,        // Not communicated by the api :(
+  SPMB_3DX_WIN_2 = -3,        // Not communicated by the api :(
+  SPMB_3DX_WIN_3 = -4,        // Not communicated by the api :(
+  SPMB_3DX_WIN_4 = -5,        // Not communicated by the api :(
+  SPMB_3DX_WIN_ESC = -6,      // Not communicated by the api :(
+  SPMB_3DX_WIN_SHIFT = -7,    // Not communicated by the api :(
+  SPMB_3DX_WIN_CTRL = -8,     // Not communicated by the api :(
+  SPMB_3DX_WIN_ALT = -9,      // Not communicated by the api :(
+  SPMB_3DX_WIN_MENU = -10,     // Not communicated by the api :(
+  SPMB_3DX_WIN_FIT = 31
+
+  // if you own an other spacemouse feel free to add further buttons
+};
+
+bool SpaceMouse3DXWin::processEvent(MSG msg) {
+  if (!mInitialized)
+    return false;
+
+  // check wether the event is a spacemouse event
+  SiSpwEvent event;
+  SiGetEventData eventData;
+  SiGetEventWinInit(&eventData, msg.message, msg.wParam, msg.lParam);
+  if (SiGetEvent( mDeviceHandle, 0, &eventData, &event) != SI_IS_EVENT) {
+    return false;
+  }
+
+  SpaceMouseMoveEvent moveEvent;
+  double axis[3];
+  int bNumPressed, bNumReleased;
+  SpaceMouseButton bnum = SPMB_UNDEFINED;
+  int changedButton;
+  bool pressed;
+
+  switch (event.type) {
+    case SI_MOTION_EVENT:
+      // set translation
+      moveEvent.tx = event.u.spwData.mData[SI_TX];
+      moveEvent.ty = event.u.spwData.mData[SI_TY];
+      moveEvent.tz = event.u.spwData.mData[SI_TZ];
+
+      // compute and set angle = norm of the rotation axis
+      for (size_t i = 0; i < 3; ++i) axis[i] = event.u.spwData.mData[SI_RX + i];
+      moveEvent.angle = sqrt(axis[0] * axis[0] + axis[1] * axis[1] + axis[2] * axis[2]);
+
+      // set (normalized) rotation axis
+      if (moveEvent.angle == 0) {
+        moveEvent.axisX = 0;
+        moveEvent.axisY = 0;
+        moveEvent.axisZ = 1;
+      } else {
+        moveEvent.axisX = axis[0] / moveEvent.angle;
+        moveEvent.axisY = axis[1] / moveEvent.angle;
+        moveEvent.axisZ = axis[2] / moveEvent.angle;
+      }
+
+      // call the callback with that event
+      mMoveCallback(std::move(moveEvent));
+      break;
+    case SI_BUTTON_EVENT:
+      bNumPressed = SiButtonPressed(&event);
+      bNumReleased = SiButtonReleased(&event);
+
+      pressed = (bNumPressed != SI_NO_BUTTON && bNumPressed != SPW_ERROR);
+      pressed = pressed && (bNumReleased == SI_NO_BUTTON);
+
+      changedButton = (pressed ? bNumPressed : bNumReleased);
+
+      switch (changedButton) {
+        case SpaceMouseButton3DXWin::SPMB_3DX_WIN_TOP:
+          bnum = SPMB_TOP;
+          break;
+        case SpaceMouseButton3DXWin::SPMB_3DX_WIN_RIGHT:
+          bnum = SPMB_RIGHT;
+          break;
+        case SpaceMouseButton3DXWin::SPMB_3DX_WIN_FRONT:
+          bnum = SPMB_FRONT;
+          break;
+        case SpaceMouseButton3DXWin::SPMB_3DX_WIN_LOCK_ROT:
+          bnum = SPMB_LOCK_ROT;
+          break;
+        case SpaceMouseButton3DXWin::SPMB_3DX_WIN_ROLL_CW:
+          bnum = SPMB_ROLL_CW;
+          break;
+        case SpaceMouseButton3DXWin::SPMB_3DX_WIN_1:
+          bnum = SPMB_1;
+          break;
+        case SpaceMouseButton3DXWin::SPMB_3DX_WIN_2:
+          bnum = SPMB_2;
+          break;
+        case SpaceMouseButton3DXWin::SPMB_3DX_WIN_3:
+          bnum = SPMB_3;
+          break;
+        case SpaceMouseButton3DXWin::SPMB_3DX_WIN_4:
+          bnum = SPMB_4;
+          break;
+        case SpaceMouseButton3DXWin::SPMB_3DX_WIN_ESC:
+          bnum = SPMB_ESC;
+          break;
+        case SpaceMouseButton3DXWin::SPMB_3DX_WIN_SHIFT:
+          bnum = SPMB_SHIFT;
+          break;
+        case SpaceMouseButton3DXWin::SPMB_3DX_WIN_CTRL:
+          bnum = SPMB_CTRL;
+          break;
+        case SpaceMouseButton3DXWin::SPMB_3DX_WIN_ALT:
+          bnum = SPMB_ALT;
+          break;
+        case SpaceMouseButton3DXWin::SPMB_3DX_WIN_MENU:
+          bnum = SPMB_MENU;
+          break;
+        case SpaceMouseButton3DXWin::SPMB_3DX_WIN_FIT:
+          bnum = SPMB_FIT;
+          break;
+        default:
+          bnum = SPMB_UNDEFINED;
+          break;
+      }
+
+      if (pressed) {
+        if (bnum == SPMB_SHIFT)
+          mModifiers.add(SpaceMouseModifierKey::SPMM_SHIFT);
+        else if (bnum == SPMB_CTRL)
+          mModifiers.add(SpaceMouseModifierKey::SPMM_CTRL);
+        else if (bnum == SPMB_ALT)
+          mModifiers.add(SpaceMouseModifierKey::SPMM_ALT);
+        mButtonPressCallback({bnum, mModifiers});
+      } else {
+        if (bnum == SPMB_SHIFT)
+          mModifiers.remove(SpaceMouseModifierKey::SPMM_SHIFT);
+        else if (bnum == SPMB_CTRL)
+          mModifiers.remove(SpaceMouseModifierKey::SPMM_CTRL);
+        else if (bnum == SPMB_ALT)
+          mModifiers.remove(SpaceMouseModifierKey::SPMM_ALT);
+        mButtonReleaseCallback({bnum, mModifiers});
+      }
+      break;
+    default:
+      break;
+  }
+  return true;
+}
+
+SpaceMouse3DXWin &SpaceMouse3DXWin::instance() {
+  static SpaceMouse3DXWin pInstance;
+  return pInstance;
+}
+
+void SpaceMouse3DXWin::Initialize() {
+  #ifndef NDEBUG
+  logFun("Init 3DX");
+  #endif  // NDEBUG
+  if (!mInitialized) {
+    auto error = SiInitialize();
+    mInitialized = (error == SPW_NO_ERROR);
+    if (!mInitialized)
+      logFun("SiInitialize failed!");
+    char name[] = "Cura";
+    SiOpenData oData;
+    char buffer[50];
+    sprintf(buffer, "SiOpenWinInit: Window handle: %p", mWinID);
+    logFun(buffer);
+    SiOpenWinInit(&oData, mWinID);
+    if ((mDeviceHandle = SiOpen(name, SI_ANY_DEVICE, SI_NO_MASK, SI_EVENT, &oData))
+        == NULL) {
+      SiTerminate();
+      mInitialized = false;
+      logFun("SiOpen failed");
+      return;
+    } else {
+      SiDeviceName deviceName;
+      SiGetDeviceName(mDeviceHandle, &deviceName);
+      char buffer[50];
+      sprintf(buffer, "SiOpen succeeded: Device: %s", deviceName.name);
+      logFun(buffer);
+    }
+  }
+}
+
+/**
+ * @brief Closes the connection to the 3DConnexion client.
+ * @note You do not have to take care of this yourself, as the destructor will
+ * also close the connection. You can, however, also do it yourself.
+ *
+ */
+void SpaceMouse3DXWin::Close() {
+  #ifndef NDEBUG
+  logFun("Close 3DX");
+  #endif  // NDEBUG
+  SiClose(mDeviceHandle);
+  SiTerminate();
+  mInitialized = false;
+}
+
+SpaceMouse3DXWin::SpaceMouse3DXWin() {
+  mInitialized = false;
+}
+
+SpaceMouse3DXWin::~SpaceMouse3DXWin() {
+  if (mInitialized) Close();
+}
+#endif  // WITH_LIB3DX_WIN
+
 /*--------------------------------------------------------------------------*/
 /* Daemon for processing spacemouse events and calling the callbacks        */
 /*--------------------------------------------------------------------------*/
@@ -424,6 +638,8 @@ SpaceMouseDaemon::SpaceMouseDaemon() {
 #else
 #error You have to specify which daemon is used
 #endif  // WITH_DAEMONSPACENAV OR WITH_DEAMON3DX
+#elif WITH_LIB3DX_WIN
+  spaceMouse = &SpaceMouse3DXWin::instance();
 #else
 #error You have to specify which library (3dx or libspacenav) is used
 #endif  // WITH_LIB3DX OR WITH_LIBSPACENAV

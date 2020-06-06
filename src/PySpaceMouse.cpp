@@ -81,6 +81,45 @@ static PyObject* start_spacemouse_daemon(PyObject* /*self*/, PyObject* args) {
   return Py_None;
 }
 
+#ifdef WITH_LIB3DX_WIN
+static PyObject* set_window_handle(PyObject* /*self*/, PyObject* args) {
+  HWND winId;
+
+  PyObject* capsule;
+  if (!PyArg_ParseTuple(args, "O", &capsule)) {
+    PyErr_SetString(PyExc_TypeError, "Unable to extract capsule from tuple");
+  } else if (!PyCapsule_IsValid(capsule, nullptr)) {
+    PyErr_SetString(PyExc_TypeError, "Capsule is not valid");
+  } else {
+    winId = (HWND)PyCapsule_GetPointer(capsule, NULL);
+  }
+
+  auto& smDaemon = spacemouse::SpaceMouseDaemon::instance();
+  smDaemon.setWindowHandle(winId);
+
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
+static PyObject* process_win_event(PyObject* /*self*/, PyObject* args) {
+  MSG message;
+
+  PyObject* capsule;
+  if (!PyArg_ParseTuple(args, "O", &capsule)) {
+    PyErr_SetString(PyExc_TypeError, "Unable to extract capsule from tuple");
+  } else if (!PyCapsule_IsValid(capsule, nullptr)) {
+    PyErr_SetString(PyExc_TypeError, "Capsule is not valid");
+  } else {
+    message = *(MSG*)PyCapsule_GetPointer(capsule, NULL);
+  }
+
+  auto& smDaemon = spacemouse::SpaceMouseDaemon::instance();
+  auto handled = smDaemon.processWinEvent(message);
+
+  return PyBool_FromLong(handled);
+}
+#endif
+
 static const char* docString =
   "Starts the space mouse daemon in the background\n"
   "\n"
@@ -98,6 +137,10 @@ static const char* docString =
 static PyMethodDef SpaceMouseMethods[] = {
     {"set_logger", set_logger, METH_VARARGS, "bla"},
     {"start_spacemouse_daemon", start_spacemouse_daemon, METH_VARARGS, docString},
+#ifdef WITH_LIB3DX_WIN
+    {"set_window_handle", set_window_handle, METH_VARARGS, "bla"},
+    {"process_win_event", process_win_event, METH_VARARGS, "bla"},
+#endif
     {nullptr, nullptr, 0, nullptr}
 };
 
