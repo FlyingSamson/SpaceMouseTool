@@ -299,11 +299,8 @@ class SpaceMouseTool(Tool):
         elif button == SpaceMouseTool.SpaceMouseButton.SPMB_FIT:
             SpaceMouseTool._fitSelection()
 
-        # Logger.log("d", "Press " + str(button) + " " + str(modifiers))
-
     @staticmethod
     def spacemouse_button_release_callback(button: int, modifiers: int):
-        # Logger.log("d", "Release " + str(button) + " " + str(modifiers))
         pass
 
     if platform.system() == "Windows":
