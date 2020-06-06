@@ -142,7 +142,16 @@ static PyObject* process_win_event(PyObject* /*self*/, PyObject* args) {
 }
 #endif
 
-static const char* docString =
+static const char* docSetLogger =
+  "Sets the logger function that will be used for printing logging information regarding the"
+  " spacemouse\n"
+  "\n"
+  "Parameters:\n"
+  "logFun (function(str) -> None): Callback function that is called to log space mouse activity\n"
+  "\n"
+  "Returns:\n"
+  "None";
+static const char* docStart =
   "Starts the space mouse daemon in the background\n"
   "\n"
   "Parameters:\n"
@@ -155,15 +164,38 @@ static const char* docString =
   "\n"
   "Returns:\n"
   "None";
+static const char* docRelease =
+  "Releases the space mouse daemon by resetting the callback functions and the logger function"
+  " to no-ops\n"
+  "\n"
+  "Returns:\n"
+  "None";
+#ifdef WITH_LIB3DX_WIN
+static const char* docSetHwnd =
+  "Sets the hwnd window handle\n"
+  "\n"
+  "Parameters:\n"
+  "winID (Capsule): A python capsule containing the hwnd pointer\n"
+  "\n"
+  "Returns:\n"
+  "None";
+static const char* docProcessWinEvent =
+  "Processes a Windows MSG message\n"
+  "Parameters:\n"
+  "msg (Capsule): A python capsule containing a pointer to the MSG message\n"
+  "\n"
+  "Returns:\n"
+  "Bool: Whether or not the event has be handled";
+#endif  // WITH_LIB3DX_WIN
 
 static PyMethodDef SpaceMouseMethods[] = {
-    {"set_logger", set_logger, METH_VARARGS, "bla"},
-    {"start_spacemouse_daemon", start_spacemouse_daemon, METH_VARARGS, docString},
-    {"release_spacemouse_daemon", release_spacemouse_daemon, METH_NOARGS, "bla"},
+    {"set_logger", set_logger, METH_VARARGS, docSetLogger},
+    {"start_spacemouse_daemon", start_spacemouse_daemon, METH_VARARGS, docStart},
+    {"release_spacemouse_daemon", release_spacemouse_daemon, METH_NOARGS, docRelease},
 #ifdef WITH_LIB3DX_WIN
-    {"set_window_handle", set_window_handle, METH_VARARGS, "bla"},
-    {"process_win_event", process_win_event, METH_VARARGS, "bla"},
-#endif
+    {"set_window_handle", set_window_handle, METH_VARARGS, docSetHwnd},
+    {"process_win_event", process_win_event, METH_VARARGS, docProcessWinEvent},
+#endif  // WITH_LIB3DX_WIN
     {nullptr, nullptr, 0, nullptr}
 };
 
