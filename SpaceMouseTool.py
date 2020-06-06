@@ -19,9 +19,9 @@ from typing import cast
 
 import platform
 if platform.system() == "Darwin":
-    from .lib.darwin.pyspacemouse import set_logger, start_spacemouse_daemon, release_spacemouse_daemon
+    from .lib.pyspacemouse import set_logger, start_spacemouse_daemon, release_spacemouse_daemon
 elif platform.system() == "Linux":
-    from .lib.x86_64.pyspacemouse import set_logger, start_spacemouse_daemon, release_spacemouse_daemon
+    from .lib.pyspacemouse import set_logger, start_spacemouse_daemon, release_spacemouse_daemon
 elif platform.system() == "Windows":
     from .lib.pyspacemouse import set_logger, start_spacemouse_daemon, release_spacemouse_daemon
     from .lib.pyspacemouse import set_window_handle, process_win_event

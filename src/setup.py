@@ -22,20 +22,17 @@ system = platform.system()
 if system == "Darwin":
     spacemouse_link_args = ['-framework', '3DconnexionClient']
     spacemouse_compiler_args.extend(['-DWITH_LIB3DX'])
-    extension_dir = "darwin/"
 elif system == "Linux":
     spacemouse_static_libs = ['/usr/lib/libspnav.a']
     spacemouse_compiler_args.extend(['-DWITH_LIBSPACENAV', '-DWITH_DAEMONSPACENAV'])
-    extension_dir = "x86_64/"
 elif system == "Windows":
     spacemouse_compiler_args.extend(['-DWITH_LIB3DX_WIN'])
-    extension_dir = ""
     spacemouse_libraries.extend(['siapp'])
     spacemouse_lib_dirs.extend(["C:\\Program Files (x86)\\3Dconnexion\\3DxWare SDK\\Lib\\x64"])
     spacemouse_include_args.extend(["C:\\Program Files (x86)\\3Dconnexion\\3DxWare SDK\\Inc"])
 
 
-module = Extension(extension_dir + 'pyspacemouse',
+module = Extension('pyspacemouse',
                    language='c++',
                    extra_compile_args=spacemouse_compiler_args,
                    sources=['PySpaceMouse.cpp',
