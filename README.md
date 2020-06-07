@@ -2,17 +2,17 @@ Supported Platforms
 ---
 The plugin should work on Mac OSX, Linux, and Windows. I successfully tested it on
 * Mac OSX 10.13.6 (High Sierra),
-* Ubuntu 16.04 (Xenial)
-* Ubuntu 18.04 (Bionic)
+* Ubuntu 16.04 (Xenial),
+* Ubuntu 18.04 (Bionic), and
 * Window 10 Pro
 
-If desired I could also provide libs for Arm Architektures such as present in the Raspberry Pi B, 2B, and 3B.
+If desired I could also provide libs for ARM architektures such as used by the Raspberry Pi B, 2B, and 3B.
 
 Installation
 ---
 ### Prerequirements
 #### Mac OSX / Windows
-You need to have the 3Dconnexion drivers installed and running to use the plugin. Those can be found on their [website](https://www.3dconnexion.de/service/drivers.html)
+You need to have the 3Dconnexion drivers installed and running to use the plugin. Those can be found on their [website](https://www.3dconnexion.de/service/drivers.html).
 #### Linux
 You need to have the [spacenavd daemon](http://spacenav.sourceforge.net) installed and running to use the plugin. On Ubuntu, e.g., you can install it using aptget via the command
 ```
@@ -24,7 +24,7 @@ sudo apt install spacenavd
 2. Go to `Help -> Show Configuration Folder`. This will open the folder holding your personal cura configurations and plugins.
 3. Close Cura (you will have to restart Cura to make the new plugin available anyway).
 4. Download the latest release of this plugin.
-5. Extract the downloaded folder into the `plugins` folder inside the folder found in 2.
+5. Extract the downloaded file into the `plugins` folder inside the folder found in 2.
 6. Start Cura.
 7. Enjoy.
 
