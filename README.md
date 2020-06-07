@@ -34,7 +34,7 @@ Use the configuration tool provided with the 3Dconnexion Driver. It can be found
 #### Windows
 Use the configuration tool provided with the 3Dconnexion Driver. It can be found in the Start Menu under `3Dconnexion -> 3Dconnexion Properties`. Note that you need to have Cura open in the background in order for the configuration tool to recognize the app for which you want to customize the space mouse.
 #### Linux
-You can use the graphical tool provided by [here](https://github.com/FreeSpacenav/spnavcfg/releases) to customize the behavior of your space mouse.  
+You can use the graphical tool provided [here](https://github.com/FreeSpacenav/spnavcfg/releases) to customize the behavior of your space mouse.  
 
 
 Included dependencies
