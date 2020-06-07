@@ -6,7 +6,30 @@ The plugin should work on Mac OSX, Linux, and Windows. I successfully tested it 
 * Ubuntu 18.04 (Bionic), and
 * Window 10 Pro
 
-If desired I could also provide libs for ARM architektures such as used by the Raspberry Pi B, 2B, and 3B.
+If desired I could also provide libs for ARM architectures such as used by the Raspberry Pi B, 2B, and 3B.
+
+
+State of development
+---
+### Currently implemented
+* Free movement (translation and rotation) of the camera around the current rotation center using a free orbit (constraint orbit might follow in the future, but is currently not in progress.
+* The same rotation center as when rotating with the mouse is used. Especially when `center selected model` is activated in Cura the camera will rotate around that model.
+* `Top`, `Right`, `Front` buttons of the space mouse work as expected, i.e. they move the camera to top, right, or front view, respectively.
+* Additionally when holding down `Shift` either on the space mouse (if it has such a key) or on the keyboard while hitting `Top`, `Right`, or `Front`, the corresponding other side is shown, i.e. the camera moves to bottom, left or rear view.
+* The `Rot CW` button of the space mouse works as expected, i.e. it rotates the space clockwise around the view axis by 90 degrees.
+* Again holding down `Shift` on the space mouse or on the keyboard will cause the camera to rotate counterclockwise around that axis by 90 degrees.
+* Pressing the `Fit` button while one or multiple models are selected will translate/zoom the camera in such a way that those objects are centered and completely visible in the viewport (there is still a little bug here, as the top banner of Cura overlaps the viewport and thus the selected models, I will fix this when I have the time).
+* The modifier keys, `Shift`, `Ctrl`, and `Alt` work as expected (on linux, on OSX and Windows you can just map them on the corresponding keyboard keys using the 3DConnexion configuration tool), i.e. they send the appropriate keyboard signal to Cura. I'm not aware of any place where the Esc key is used in Cura, but if there is one enlighten me, and I will try to also add it.
+* Rotation lock currently only works on OSX and Windows as it can be configured in the 3DConnexion interface. (I plan to support it in linux in the future, too.)
+
+### Plans for future development (descending by importance)
+* Rotation lock on linux
+* Constraint orbit movement
+* Menu button to open `Print settings`
+* Esc key support if required
+* I'm always open for suggestions and contributions
+* Maybe include the plugin in the Cura marketplace
+
 
 Installation
 ---
@@ -21,7 +44,7 @@ sudo apt install spacenavd
 
 ### Installation of the plugin itself
 1. Open Cura.
-2. Go to `Help -> Show Configuration Folder`. This will open the folder holding your personal cura configurations and plugins.
+2. Go to `Help -> Show Configuration Folder`. This will open the folder holding your personal Cura configurations and plugins.
 3. Close Cura (you will have to restart Cura to make the new plugin available anyway).
 4. Download the [latest release](https://github.com/FlyingSamson/SpaceMouseTool/releases/latest) of this plugin.
 5. Extract the downloaded file into the `plugins` folder inside the folder found in 2.
@@ -39,8 +62,8 @@ You can use the graphical tool provided [here](https://github.com/FreeSpacenav/s
 
 Included dependencies
 ---
-### 3Dconnexion SDK:
-The c++ osx and windows libraries included in this plugin are linked against the 3DconnexionClient and 3Dconnexion SDK libraries, respectively.
+### 3Dconnexion SDK
+The c++ OSX and Windows libraries included in this plugin are linked against the 3Dconnexion client and 3Dconnexion SDK libraries, respectively.
 > 3D input device development tools and related technology are provided under license from 3Dconnexion. (c) 3Dconnexion 1992 - 2016. All rights reserved.
 
 
