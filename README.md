@@ -23,7 +23,7 @@ sudo apt install spacenavd
 1. Open Cura.
 2. Go to `Help -> Show Configuration Folder`. This will open the folder holding your personal cura configurations and plugins.
 3. Close Cura (you will have to restart Cura to make the new plugin available anyway).
-4. Download the latest release of this plugin.
+4. Download the [latest release](https://github.com/FlyingSamson/SpaceMouseTool/releases/latest) of this plugin.
 5. Extract the downloaded file into the `plugins` folder inside the folder found in 2.
 6. Start Cura.
 7. Enjoy.
