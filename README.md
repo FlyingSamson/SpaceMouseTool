@@ -1,3 +1,8 @@
+Description
+---
+This Cura plugin allows to use a 3Dconnexion space mouse to rotate, and pan the camera in Cura.
+
+
 Supported Platforms
 ---
 The plugin should work on Mac OSX, Linux, and Windows. I successfully tested it on
