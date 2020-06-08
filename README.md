@@ -62,6 +62,32 @@ Use the configuration tool provided with the 3Dconnexion Driver. It can be found
 You can use the graphical tool provided [here](https://github.com/FreeSpacenav/spnavcfg/releases) to customize the behavior of your space mouse.  
 
 
+Building the plugin from source
+---
+### Prerequirements
+#### Mac OSX / Linux
+* You will need Python 3.5 with pymalloc deactivated. I built version 3.5.9 from [source](https://www.python.org/downloads/release/python-359/), as the non-pymalloc version wasn't available through apt-get or macports. To disable pymalloc use the `--without-pymalloc` flag during configuration.
+* You will also need a standard build environment including g++/gcc, etc.  
+* Finally, on Linux you will need the development package of libspacenav. On Ubuntu you can install those using.
+```
+sudo apt install libspnav-dev
+```
+
+#### Windows
+* You will need Python 3.5. I used Python 3.5.4 as it is the latest version of Python 3.5 available on the [download page](https://www.python.org/downloads/windows/).
+* You will also need Visual Studio 2015 (not that easy to come by without an Microsoft developer account, but the iso image can still be found in a stackoverflow post). At least I used version 2015, but as I'm not normally a Windows developer I don't know whether newer versions will also work.
+* Finally, you will need the 3Dconnexion SDK which is available in the [developer section of the 3Dconnexion website](https://www.3dconnexion.de/service/software-developer.html) (requires you to create an account).
+
+### Building the code
+1. Get the source code of the [latest release](https://github.com/FlyingSamson/SpaceMouseTool/releases/latest) (or any other commit that you want to build) and extract it to the `plugins` folder of your Cura configuration directory as explained above.
+2. Using the (Power)shell navigate to the src directory inside the extracted folder.
+3. Run
+```
+python3.5 setup.py build
+```
+to build the library. Make sure to use the python version without pymalloc.
+4. If step 3 fails because some symbols or headers were not found, have a look in `setup.py` and check that the include and link paths are set correctly for your system.
+
 Included dependencies
 ---
 ### 3Dconnexion SDK
