@@ -6,6 +6,8 @@ The plugin should work on Mac OSX, Linux, and Windows. I successfully tested it 
 * Ubuntu 18.04 (Bionic), and
 * Window 10 Pro
 
+each running Cura 4.6.1.
+
 If desired I could also provide libs for ARM architectures such as used by the Raspberry Pi B, 2B, and 3B.
 
 
