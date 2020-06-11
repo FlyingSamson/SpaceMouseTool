@@ -51,6 +51,7 @@ class SpaceMouseTool(Tool):
     _zoomMin = -0.495  # same as used in CameraTool
     _zoomMax = 1       # same as used in CameraTool
     _fitBorderPercentage = 0.1
+    _rotationLocked = False
 
     class SpaceMouseButton(IntEnum):
         # buttons on the 3DConnexion Spacemouse Wireles Pro:
@@ -123,6 +124,8 @@ class SpaceMouseTool(Tool):
 
     @staticmethod
     def _rotateCamera(angle: float, axisX: float, axisY: float, axisZ: float) -> None:
+        if SpaceMouseTool._rotationLocked:
+            return
         camera = SpaceMouseTool._scene.getActiveCamera()
         if not camera or not camera.isEnabled():
             return
@@ -302,6 +305,10 @@ class SpaceMouseTool(Tool):
                 SpaceMouseTool._rotateCamera(-math.pi/2, 0, 1, 0)
         elif button == SpaceMouseTool.SpaceMouseButton.SPMB_FIT:
             SpaceMouseTool._fitSelection()
+        elif button == SpaceMouseTool.SpaceMouseButton.SPMB_LOCK_ROT:
+            if platform.system() == "Linux":
+                SpaceMouseTool._rotationLocked = not SpaceMouseTool._rotationLocked
+            # on Windows and OSX this is taken care of by the driver
 
     @staticmethod
     def spacemouse_button_release_callback(button: int, modifiers: int):
