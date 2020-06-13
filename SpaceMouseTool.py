@@ -170,7 +170,51 @@ class SpaceMouseTool(Extension):
 
     @staticmethod
     def _rotateCameraConstrained(angleAzim: float, angleIncl: float) -> None:
-        SpaceMouseTool._cameraTool.rotateCamera(angleAzim, angleIncl)
+        if SpaceMouseTool._rotationLocked:
+            return
+        camera = SpaceMouseTool._scene.getActiveCamera()
+        if not camera or not camera.isEnabled():
+            return
+
+        # we need to compute the translation and lookAt in one step as we otherwise get artifacts
+        # from first setting the camera to a new position and then telling it to look at the
+        # rotation center
+
+        up = Vector.Unit_Y
+        target = SpaceMouseTool._cameraTool.getOrigin()
+
+        oldEye = camera.getWorldPosition()
+        camToTarget = (target - oldEye).normalized()
+
+        # compute angle between up axis and current camera ray
+        try:
+            angleToY = math.acos(up.dot(camToTarget))
+        except ValueError:
+            return
+
+        #compute new position of camera
+        rotMat = Matrix()
+        rotMat.rotateByAxis(angleAzim, up, target.getData())
+        # prevent camera from rotating to close to the poles
+        if (angleToY > 0.1 or angleIncl > 0 ) and (angleToY < math.pi - 0.1 or angleIncl < 0):
+            rotMat.rotateByAxis(angleIncl, up.cross(camToTarget).normalized(), target.getData())
+        newEye = oldEye.preMultiply(rotMat)
+
+        # look at (from UM.Scene.SceneNode)
+        f = (target - newEye).normalized()
+        s = f.cross(up).normalized()
+        u = s.cross(f).normalized()
+
+        # construct new matrix for camera including the new position and orientation from looking at
+        # the rotation center
+        newTrafo = Matrix([
+            [ s.x,  u.x,  -f.x, newEye.x],
+            [ s.y,  u.y,  -f.y, newEye.y],
+            [ s.z,  u.z,  -f.z, newEye.z],
+            [ 0.0,  0.0,  0.0,  1.0]
+        ])
+
+        camera.setTransformation(newTrafo)
 
     @staticmethod
     def _fitSelection() -> None:
@@ -287,14 +331,19 @@ class SpaceMouseTool(Extension):
     def spacemouse_move_callback(
             tx: int, ty: int, tz: int,
             angle: float, axisX: float, axisY: float, axisZ: float) -> None:
-        # translate and zoom:
-        SpaceMouseTool._translateCamera(tx, ty, tz)
-
         if SpaceMouseTool._constrainedOrbit:
-            angleAzim = -angle * axisZ * 180 * SpaceMouseTool._rotScaleConstrained
-            angleIncl = angle * axisX * 180 * SpaceMouseTool._rotScaleConstrained
+            # translate and zoom:
+            SpaceMouseTool._translateCamera(0, ty, 0)
+
+            # rotate
+            angleAzim = angle * axisZ * SpaceMouseTool._rotScaleConstrained
+            angleIncl = angle * axisX * SpaceMouseTool._rotScaleConstrained
             SpaceMouseTool._rotateCameraConstrained(angleAzim, angleIncl)
         else:
+            # translate and zoom:
+            SpaceMouseTool._translateCamera(tx, ty, tz)
+
+            # rotate
             SpaceMouseTool._rotateCameraFree(angle * SpaceMouseTool._rotScaleFree,
                                              axisX, axisY, axisZ)
 
