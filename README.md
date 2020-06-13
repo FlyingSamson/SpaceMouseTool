@@ -19,7 +19,9 @@ If desired I could also provide libs for ARM architectures such as used by the R
 State of development
 ---
 ### Currently implemented
-* Free movement (translation and rotation) of the camera around the current rotation center using a free orbit (constraint orbit might follow in the future, but is currently not in progress.
+* Free movement (translation and rotation) of the camera around the current rotation center using a free orbit.
+* Rotation of camera around the current rotation center using a constrained orbit as already implemented in Cura using standard mouse interaction.
+* To switch between free and constrained movement go to `Extensions`&rarr;`Space Mouse Tool` and click on `Toggle free/constrained orbit`.
 * The same rotation center as when rotating with the mouse is used. Especially when `center selected model` is activated in Cura the camera will rotate around that model.
 * `Top`, `Right`, `Front` buttons of the space mouse work as expected, i.e. they move the camera to top, right, or front view, respectively.
 * Additionally when holding down `Shift` either on the space mouse (if it has such a key) or on the keyboard while hitting `Top`, `Right`, or `Front`, the corresponding other side is shown, i.e. the camera moves to bottom, left or rear view.
@@ -27,15 +29,15 @@ State of development
 * Again holding down `Shift` on the space mouse or on the keyboard will cause the camera to rotate counterclockwise around that axis by 90 degrees.
 * Pressing the `Fit` button while one or multiple models are selected will translate/zoom the camera in such a way that those objects are centered and completely visible in the viewport (there is still a little bug here, as the top banner of Cura overlaps the viewport and thus the selected models, I will fix this when I have the time).
 * The modifier keys, `Shift`, `Ctrl`, and `Alt` work as expected (on linux, on OSX and Windows you can just map them on the corresponding keyboard keys using the 3DConnexion configuration tool), i.e. they send the appropriate keyboard signal to Cura. I'm not aware of any place where the Esc key is used in Cura, but if there is one enlighten me, and I will try to also add it.
-* Rotation lock currently only works on OSX and Windows as it can be configured in the 3DConnexion interface. (I plan to support it in linux in the future, too.)
+* Rotation lock works on all platforms. On Windows and OSX it can/must be configured in the 3DConnexion interface. In Linux the plugin takes care of dis- and enabling the camera-rotation.
 
 ### Plans for future development (descending by importance)
-* Rotation lock on linux
-* Constraint orbit movement
-* Menu button to open `Print settings`
-* Esc key support if required
+* [x] Rotation lock on linux (included in v1.1.0)
+* [x] Constraint orbit movement (included in v1.1.0)
+* [ ] Menu button to open `Print settings`
+* [ ] Esc key support if required
+* [ ] Maybe include the plugin in the Cura marketplace
 * I'm always open for suggestions and contributions
-* Maybe include the plugin in the Cura marketplace
 
 
 Installation
