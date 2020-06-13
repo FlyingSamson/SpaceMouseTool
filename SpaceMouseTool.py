@@ -8,8 +8,8 @@ from UM.Math.Vector import Vector
 from UM.Qt.Bindings.MainWindow import MainWindow
 from UM.Qt.QtApplication import QtApplication
 from UM.Scene.Selection import Selection
-from UM.Tool import Tool
-
+from UM.Extension import Extension
+from UM.i18n import i18nCatalog
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import QAbstractNativeEventFilter
@@ -30,6 +30,9 @@ elif platform.system() == "Windows":
     from .lib.pyspacemouse import set_window_handle, process_win_event
 
 
+catalog = i18nCatalog("cura")
+
+
 def homogenize(vec4: np.array) -> np.array:  # vec3
     vec4 /= vec4[3]
     return vec4[0:3]
@@ -42,17 +45,18 @@ def debugLog(s: str) -> None:
 set_logger(debugLog)
 
 
-class SpaceMouseTool(Tool):
+class SpaceMouseTool(Extension):
     _scene = None
     _cameraTool = None
-    _rotScale = 0.00005
+    _rotScaleFree = 0.0001
+    _rotScaleConstrained = 0.00004
     _transScale = 0.015
     _zoomScale = 0.00001
     _zoomMin = -0.495  # same as used in CameraTool
     _zoomMax = 1       # same as used in CameraTool
     _fitBorderPercentage = 0.1
     _rotationLocked = False
-    _constrainedOrbit = True
+    _constrainedOrbit = False
 
     class SpaceMouseButton(IntEnum):
         # buttons on the 3DConnexion Spacemouse Wireles Pro:
@@ -93,10 +97,19 @@ class SpaceMouseTool(Tool):
         SpaceMouseTool._scene = Application.getInstance().getController().getScene()
         SpaceMouseTool._cameraTool = Application.getInstance().getController().getTool("CameraTool")
 
+        # get the preference for free/constrained orbit from cura preferences pane
+        self.setMenuName(catalog.i18nc("@item:inmenu", "Space Mouse Tool"))
+        self.addMenuItem(catalog.i18nc("@item:inmenu", "Toggle free/constrained orbit"),
+                         SpaceMouseTool._toggleOrbit)
+
         # init space mouse when engine was created as we require the hwnd of the
         # MainWindow on Windows
         Application.getInstance().engineCreatedSignal.connect(SpaceMouseTool._onEngineCreated)
         Application.getInstance().applicationShuttingDown.connect(release_spacemouse_daemon)
+
+    @staticmethod
+    def _toggleOrbit() -> None:
+        SpaceMouseTool._constrainedOrbit = not SpaceMouseTool._constrainedOrbit
 
     @staticmethod
     def _translateCamera(tx: int, ty: int, tz: int) -> None:
@@ -278,11 +291,12 @@ class SpaceMouseTool(Tool):
         SpaceMouseTool._translateCamera(tx, ty, tz)
 
         if SpaceMouseTool._constrainedOrbit:
-            angleAzim = -angle * axisZ * 180 * SpaceMouseTool._rotScale
-            angleIncl = angle * axisX * 180 * SpaceMouseTool._rotScale
+            angleAzim = -angle * axisZ * 180 * SpaceMouseTool._rotScaleConstrained
+            angleIncl = angle * axisX * 180 * SpaceMouseTool._rotScaleConstrained
             SpaceMouseTool._rotateCameraConstrained(angleAzim, angleIncl)
         else:
-            SpaceMouseTool._rotateCameraFree(angle * SpaceMouseTool._rotScale, axisX, axisY, axisZ)
+            SpaceMouseTool._rotateCameraFree(angle * SpaceMouseTool._rotScaleFree,
+                                             axisX, axisY, axisZ)
 
     @staticmethod
     def spacemouse_button_press_callback(button: int, modifiers: int):
@@ -334,7 +348,6 @@ class SpaceMouseTool(Tool):
             SpaceMouseTool.spacemouse_move_callback,
             SpaceMouseTool.spacemouse_button_press_callback,
             SpaceMouseTool.spacemouse_button_release_callback)
-
 
         if platform.system() == "Windows":
             # the windows api requires the hwnd (window id)
