@@ -192,11 +192,11 @@ class SpaceMouseTool(Extension):
         except ValueError:
             return
 
-        #compute new position of camera
+        # compute new position of camera
         rotMat = Matrix()
         rotMat.rotateByAxis(angleAzim, up, target.getData())
         # prevent camera from rotating to close to the poles
-        if (angleToY > 0.1 or angleIncl > 0 ) and (angleToY < math.pi - 0.1 or angleIncl < 0):
+        if (angleToY > 0.1 or angleIncl > 0) and (angleToY < math.pi - 0.1 or angleIncl < 0):
             rotMat.rotateByAxis(angleIncl, up.cross(camToTarget).normalized(), target.getData())
         newEye = oldEye.preMultiply(rotMat)
 
@@ -208,10 +208,10 @@ class SpaceMouseTool(Extension):
         # construct new matrix for camera including the new position and orientation from looking at
         # the rotation center
         newTrafo = Matrix([
-            [ s.x,  u.x,  -f.x, newEye.x],
-            [ s.y,  u.y,  -f.y, newEye.y],
-            [ s.z,  u.z,  -f.z, newEye.z],
-            [ 0.0,  0.0,  0.0,  1.0]
+            [s.x,  u.x,  -f.x, newEye.x],
+            [s.y,  u.y,  -f.y, newEye.y],
+            [s.z,  u.z,  -f.z, newEye.z],
+            [0.0,  0.0,  0.0,  1.0]
         ])
 
         camera.setTransformation(newTrafo)
