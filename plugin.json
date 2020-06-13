@@ -1,7 +1,7 @@
 {
     "name": "Space Mouse Tool",
     "author": "FlyingSamson",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Provides a tool to manipulate the camera using a space mouse",
     "api": "7.2.0",
     "i18n-catalog": "cura"
