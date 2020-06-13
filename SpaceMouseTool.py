@@ -8,8 +8,8 @@ from UM.Math.Vector import Vector
 from UM.Qt.Bindings.MainWindow import MainWindow
 from UM.Qt.QtApplication import QtApplication
 from UM.Scene.Selection import Selection
-from UM.Tool import Tool
-
+from UM.Extension import Extension
+from UM.i18n import i18nCatalog
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import QAbstractNativeEventFilter
@@ -30,6 +30,9 @@ elif platform.system() == "Windows":
     from .lib.pyspacemouse import set_window_handle, process_win_event
 
 
+catalog = i18nCatalog("cura")
+
+
 def homogenize(vec4: np.array) -> np.array:  # vec3
     vec4 /= vec4[3]
     return vec4[0:3]
@@ -42,16 +45,18 @@ def debugLog(s: str) -> None:
 set_logger(debugLog)
 
 
-class SpaceMouseTool(Tool):
+class SpaceMouseTool(Extension):
     _scene = None
     _cameraTool = None
-    _rotScale = 0.00005
+    _rotScaleFree = 0.0001
+    _rotScaleConstrained = 0.00004
     _transScale = 0.015
     _zoomScale = 0.00001
     _zoomMin = -0.495  # same as used in CameraTool
     _zoomMax = 1       # same as used in CameraTool
     _fitBorderPercentage = 0.1
     _rotationLocked = False
+    _constrainedOrbit = False
 
     class SpaceMouseButton(IntEnum):
         # buttons on the 3DConnexion Spacemouse Wireles Pro:
@@ -92,10 +97,19 @@ class SpaceMouseTool(Tool):
         SpaceMouseTool._scene = Application.getInstance().getController().getScene()
         SpaceMouseTool._cameraTool = Application.getInstance().getController().getTool("CameraTool")
 
+        # get the preference for free/constrained orbit from cura preferences pane
+        self.setMenuName(catalog.i18nc("@item:inmenu", "Space Mouse Tool"))
+        self.addMenuItem(catalog.i18nc("@item:inmenu", "Toggle free/constrained orbit"),
+                         SpaceMouseTool._toggleOrbit)
+
         # init space mouse when engine was created as we require the hwnd of the
         # MainWindow on Windows
         Application.getInstance().engineCreatedSignal.connect(SpaceMouseTool._onEngineCreated)
         Application.getInstance().applicationShuttingDown.connect(release_spacemouse_daemon)
+
+    @staticmethod
+    def _toggleOrbit() -> None:
+        SpaceMouseTool._constrainedOrbit = not SpaceMouseTool._constrainedOrbit
 
     @staticmethod
     def _translateCamera(tx: int, ty: int, tz: int) -> None:
@@ -123,7 +137,7 @@ class SpaceMouseTool(Tool):
             camera.setZoomFactor(zoomFactor)
 
     @staticmethod
-    def _rotateCamera(angle: float, axisX: float, axisY: float, axisZ: float) -> None:
+    def _rotateCameraFree(angle: float, axisX: float, axisY: float, axisZ: float) -> None:
         if SpaceMouseTool._rotationLocked:
             return
         camera = SpaceMouseTool._scene.getActiveCamera()
@@ -153,6 +167,54 @@ class SpaceMouseTool(Tool):
         rotMat = Matrix()
         rotMat.setByRotationAxis(angle, axisInWorldSpace, rotOrigin.getData())
         camera.setTransformation(camera.getLocalTransformation().preMultiply(rotMat))
+
+    @staticmethod
+    def _rotateCameraConstrained(angleAzim: float, angleIncl: float) -> None:
+        if SpaceMouseTool._rotationLocked:
+            return
+        camera = SpaceMouseTool._scene.getActiveCamera()
+        if not camera or not camera.isEnabled():
+            return
+
+        # we need to compute the translation and lookAt in one step as we otherwise get artifacts
+        # from first setting the camera to a new position and then telling it to look at the
+        # rotation center
+
+        up = Vector.Unit_Y
+        target = SpaceMouseTool._cameraTool.getOrigin()
+
+        oldEye = camera.getWorldPosition()
+        camToTarget = (target - oldEye).normalized()
+
+        # compute angle between up axis and current camera ray
+        try:
+            angleToY = math.acos(up.dot(camToTarget))
+        except ValueError:
+            return
+
+        # compute new position of camera
+        rotMat = Matrix()
+        rotMat.rotateByAxis(angleAzim, up, target.getData())
+        # prevent camera from rotating to close to the poles
+        if (angleToY > 0.1 or angleIncl > 0) and (angleToY < math.pi - 0.1 or angleIncl < 0):
+            rotMat.rotateByAxis(angleIncl, up.cross(camToTarget).normalized(), target.getData())
+        newEye = oldEye.preMultiply(rotMat)
+
+        # look at (from UM.Scene.SceneNode)
+        f = (target - newEye).normalized()
+        s = f.cross(up).normalized()
+        u = s.cross(f).normalized()
+
+        # construct new matrix for camera including the new position and orientation from looking at
+        # the rotation center
+        newTrafo = Matrix([
+            [s.x,  u.x,  -f.x, newEye.x],
+            [s.y,  u.y,  -f.y, newEye.y],
+            [s.z,  u.z,  -f.z, newEye.z],
+            [0.0,  0.0,  0.0,  1.0]
+        ])
+
+        camera.setTransformation(newTrafo)
 
     @staticmethod
     def _fitSelection() -> None:
@@ -269,9 +331,21 @@ class SpaceMouseTool(Tool):
     def spacemouse_move_callback(
             tx: int, ty: int, tz: int,
             angle: float, axisX: float, axisY: float, axisZ: float) -> None:
-        # translate and zoom:
-        SpaceMouseTool._translateCamera(tx, ty, tz)
-        SpaceMouseTool._rotateCamera(angle * SpaceMouseTool._rotScale, axisX, axisY, axisZ)
+        if SpaceMouseTool._constrainedOrbit:
+            # translate and zoom:
+            SpaceMouseTool._translateCamera(0, ty, 0)
+
+            # rotate
+            angleAzim = angle * axisZ * SpaceMouseTool._rotScaleConstrained
+            angleIncl = angle * axisX * SpaceMouseTool._rotScaleConstrained
+            SpaceMouseTool._rotateCameraConstrained(angleAzim, angleIncl)
+        else:
+            # translate and zoom:
+            SpaceMouseTool._translateCamera(tx, ty, tz)
+
+            # rotate
+            SpaceMouseTool._rotateCameraFree(angle * SpaceMouseTool._rotScaleFree,
+                                             axisX, axisY, axisZ)
 
     @staticmethod
     def spacemouse_button_press_callback(button: int, modifiers: int):
@@ -323,7 +397,6 @@ class SpaceMouseTool(Tool):
             SpaceMouseTool.spacemouse_move_callback,
             SpaceMouseTool.spacemouse_button_press_callback,
             SpaceMouseTool.spacemouse_button_release_callback)
-
 
         if platform.system() == "Windows":
             # the windows api requires the hwnd (window id)

@@ -5,12 +5,8 @@ from . import SpaceMouseTool
 
 
 def getMetaData():
-    return {
-        "tool": {
-            "visible": False
-        }
-    }
+    return {}
 
 
 def register(app):
-    return {"tool": SpaceMouseTool.SpaceMouseTool()}
+    return {"extension": SpaceMouseTool.SpaceMouseTool()}
