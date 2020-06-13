@@ -52,6 +52,7 @@ class SpaceMouseTool(Tool):
     _zoomMax = 1       # same as used in CameraTool
     _fitBorderPercentage = 0.1
     _rotationLocked = False
+    _constrainedOrbit = True
 
     class SpaceMouseButton(IntEnum):
         # buttons on the 3DConnexion Spacemouse Wireles Pro:
@@ -123,7 +124,7 @@ class SpaceMouseTool(Tool):
             camera.setZoomFactor(zoomFactor)
 
     @staticmethod
-    def _rotateCamera(angle: float, axisX: float, axisY: float, axisZ: float) -> None:
+    def _rotateCameraFree(angle: float, axisX: float, axisY: float, axisZ: float) -> None:
         if SpaceMouseTool._rotationLocked:
             return
         camera = SpaceMouseTool._scene.getActiveCamera()
@@ -153,6 +154,10 @@ class SpaceMouseTool(Tool):
         rotMat = Matrix()
         rotMat.setByRotationAxis(angle, axisInWorldSpace, rotOrigin.getData())
         camera.setTransformation(camera.getLocalTransformation().preMultiply(rotMat))
+
+    @staticmethod
+    def _rotateCameraConstrained(angleAzim: float, angleIncl: float) -> None:
+        SpaceMouseTool._cameraTool.rotateCamera(angleAzim, angleIncl)
 
     @staticmethod
     def _fitSelection() -> None:
@@ -271,7 +276,13 @@ class SpaceMouseTool(Tool):
             angle: float, axisX: float, axisY: float, axisZ: float) -> None:
         # translate and zoom:
         SpaceMouseTool._translateCamera(tx, ty, tz)
-        SpaceMouseTool._rotateCamera(angle * SpaceMouseTool._rotScale, axisX, axisY, axisZ)
+
+        if SpaceMouseTool._constrainedOrbit:
+            angleAzim = -angle * axisZ * 180 * SpaceMouseTool._rotScale
+            angleIncl = angle * axisX * 180 * SpaceMouseTool._rotScale
+            SpaceMouseTool._rotateCameraConstrained(angleAzim, angleIncl)
+        else:
+            SpaceMouseTool._rotateCameraFree(angle * SpaceMouseTool._rotScale, axisX, axisY, axisZ)
 
     @staticmethod
     def spacemouse_button_press_callback(button: int, modifiers: int):
