@@ -11,7 +11,7 @@ The plugin should work on Mac OSX, Linux, and Windows. I successfully tested it 
 * Ubuntu 18.04 (Bionic), and
 * Window 10 Pro
 
-each running Cura 4.6.1.
+each running Cura 4.9.0.
 
 If desired I could also provide libs for ARM architectures such as used by the Raspberry Pi B, 2B, and 3B.
 
@@ -73,7 +73,7 @@ Building the plugin from source
 ---
 ### Prerequirements
 #### Mac OSX / Linux
-* You will need Python 3.5 with pymalloc deactivated. I built version 3.5.9 from [source](https://www.python.org/downloads/release/python-359/), as the non-pymalloc version wasn't available through apt-get or macports. To disable pymalloc use the `--without-pymalloc` flag during configuration.
+* You will need Python 3.8 with pymalloc deactivated. I built version 3.8.10 from [source](https://www.python.org/downloads/release/python-3810/), as the non-pymalloc version wasn't available through apt-get or macports. To disable pymalloc use the `--without-pymalloc` flag during configuration.
 * You will also need a standard build environment including g++/gcc, etc.  
 * Finally, on Linux you will need the development package of libspacenav. On Ubuntu you can install those using.
 ```
@@ -81,7 +81,7 @@ sudo apt install libspnav-dev
 ```
 
 #### Windows
-* You will need Python 3.5. I used Python 3.5.4 as it is the latest version of Python 3.5 available on the [download page](https://www.python.org/downloads/windows/).
+* You will need Python 3.8. I used Python 3.8.10 as it is the latest version of Python 3.8 available on the [download page](https://www.python.org/downloads/windows/).
 * You will also need Visual Studio 2015 (not that easy to come by without an Microsoft developer account, but the iso image can still be found in a stackoverflow post). At least I used version 2015, but as I'm not normally a Windows developer I don't know whether newer versions will also work.
 * Finally, you will need the 3Dconnexion SDK which is available in the [developer section of the 3Dconnexion website](https://www.3dconnexion.de/service/software-developer.html) (requires you to create an account).
 
@@ -90,7 +90,7 @@ sudo apt install libspnav-dev
 2. Using the (Power)shell navigate to the src directory inside the extracted folder.
 3. Run
 ```
-python3.5 setup.py build
+python3.8 setup.py build
 ```
 to build the library. Make sure to use the python version without pymalloc.
 4. If step 3 fails because some symbols or headers were not found, have a look in `setup.py` and check that the include and link paths are set correctly for your system.
