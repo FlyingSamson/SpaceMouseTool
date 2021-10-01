@@ -6,7 +6,7 @@ This Cura plugin allows to use a 3Dconnexion space mouse to rotate, and pan the 
 Supported Platforms
 ---
 The plugin should work on Mac OSX, Linux, and Windows. I successfully tested it on
-* Mac OSX 10.13.6 (High Sierra), for instruction for 11.x (Big Sur) see issue [#9](/../../issues/9) (thanks to @sethvoltz)
+* Mac OSX 10.13.6 (High Sierra), for instructions for 11.x (Big Sur) see issue [#9](/../../issues/9) (thanks to @sethvoltz)
 * Ubuntu 16.04 (Xenial),
 * Ubuntu 18.04 (Bionic), and
 * Window 10 Pro
