@@ -20,7 +20,7 @@ static PyObject* set_logger(PyObject* /*self*/, PyObject* args) {
       PyGILState_STATE gil = PyGILState_Ensure();
 
       PyObject* arglist = Py_BuildValue("(s)", string);
-      PyObject* result = PyEval_CallObject(pyLogFun, arglist);
+      PyObject* result = PyObject_CallObject(pyLogFun, arglist);
 
       Py_DECREF(arglist);
       Py_XDECREF(result);
@@ -54,7 +54,7 @@ static PyObject* start_spacemouse_daemon(PyObject* /*self*/, PyObject* args) {
 
       PyObject* arglist =
           Py_BuildValue("(iiidddd)", e.tx, e.ty, e.tz, e.angle, e.axisX, e.axisY, e.axisZ);
-      PyObject* result = PyEval_CallObject(pyMoveCallback, arglist);
+      PyObject* result = PyObject_CallObject(pyMoveCallback, arglist);
 
       Py_DECREF(arglist);
       Py_XDECREF(result);
@@ -67,7 +67,7 @@ static PyObject* start_spacemouse_daemon(PyObject* /*self*/, PyObject* args) {
           PyGILState_STATE gil = PyGILState_Ensure();
 
           PyObject* arglist = Py_BuildValue("(ii)", (int)e.button, (int)e.modifierKeys.modifiers());
-          PyObject* result = PyEval_CallObject(pyButtonPressCallback, arglist);
+          PyObject* result = PyObject_CallObject(pyButtonPressCallback, arglist);
 
           Py_DECREF(arglist);
           Py_XDECREF(result);
@@ -80,7 +80,7 @@ static PyObject* start_spacemouse_daemon(PyObject* /*self*/, PyObject* args) {
           PyGILState_STATE gil = PyGILState_Ensure();
 
           PyObject* arglist = Py_BuildValue("(ii)", (int)e.button, (int)e.modifierKeys.modifiers());
-          PyObject* result = PyEval_CallObject(pyButtonReleaseCallback, arglist);
+          PyObject* result = PyObject_CallObject(pyButtonReleaseCallback, arglist);
 
           Py_DECREF(arglist);
           Py_XDECREF(result);
