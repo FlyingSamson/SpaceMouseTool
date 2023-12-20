@@ -12,7 +12,7 @@ from UM.Extension import Extension
 from UM.i18n import i18nCatalog
 
 from PyQt6 import QtCore
-from PyQt6.QtCore import QAbstractNativeEventFilter
+from PyQt6.QtCore import QAbstractNativeEventFilter, Qt
 from PyQt6.QtGui import QGuiApplication
 
 from enum import IntEnum
@@ -350,11 +350,11 @@ class SpaceMouseTool(Extension):
     @staticmethod
     def spacemouse_button_press_callback(button: int, modifiers: int):
         keyboardModifiers = QGuiApplication.queryKeyboardModifiers()
-        if (keyboardModifiers & QtCore.Qt.ShiftModifier) == QtCore.Qt.ShiftModifier:
+        if (keyboardModifiers & Qt.KeyboardModifier.ShiftModifier) == Qt.KeyboardModifier.ShiftModifier:
             modifiers |= SpaceMouseTool.SpaceMouseModifierKey.SPMM_SHIFT
-        if (keyboardModifiers & QtCore.Qt.ControlModifier) == QtCore.Qt.ControlModifier:
+        if (keyboardModifiers & Qt.KeyboardModifier.ControlModifier) == Qt.KeyboardModifier.ControlModifier:
             modifiers |= SpaceMouseTool.SpaceMouseModifierKey.SPMM_CTRL
-        if (keyboardModifiers & QtCore.Qt.AltModifier) == QtCore.Qt.ControlModifier:
+        if (keyboardModifiers & Qt.KeyboardModifier.AltModifier) == Qt.KeyboardModifier.ControlModifier:
             modifiers |= SpaceMouseTool.SpaceMouseModifierKey.SPMM_ALT
 
         if button == SpaceMouseTool.SpaceMouseButton.SPMB_TOP:
