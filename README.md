@@ -1,11 +1,12 @@
 Description
 ---
-This Cura plugin allows to use a 3Dconnexion space mouse to rotate, and pan the camera in Cura.
+This Cura plugin allows to use a 3Dconnexion space mouse to rotate and pan the camera in Cura.
 
 
 Supported Platforms
 ---
 The plugin should work on Mac OSX, Linux, and Windows. I successfully tested it on
+* Mac OSX 13.6.1 (Ventura) on Apple Silicon (M2 Pro)
 * Mac OSX 10.13.6 (High Sierra), for instructions for 11.x (Big Sur) see issue [#9](/../../issues/9) (thanks to @sethvoltz)
 * Ubuntu 16.04 (Xenial),
 * Ubuntu 18.04 (Bionic), and
@@ -28,16 +29,16 @@ State of development
 * The `Rot CW` button of the space mouse works as expected, i.e. it rotates the space clockwise around the view axis by 90 degrees.
 * Again holding down `Shift` on the space mouse or on the keyboard will cause the camera to rotate counterclockwise around that axis by 90 degrees.
 * Pressing the `Fit` button while one or multiple models are selected will translate/zoom the camera in such a way that those objects are centered and completely visible in the viewport (there is still a little bug here, as the top banner of Cura overlaps the viewport and thus the selected models, I will fix this when I have the time).
-* The modifier keys, `Shift`, `Ctrl`, and `Alt` work as expected (on linux, on OSX and Windows you can just map them on the corresponding keyboard keys using the 3DConnexion configuration tool), i.e. they send the appropriate keyboard signal to Cura. I'm not aware of any place where the Esc key is used in Cura, but if there is one enlighten me, and I will try to also add it.
+* The modifier keys, `Shift`, `Ctrl`, and `Alt` work as expected (on Linux; on OSX and Windows you can just map them on the corresponding keyboard keys using the 3DConnexion configuration tool), i.e. they send the appropriate keyboard signal to Cura. I'm not aware of any place where the Esc key is used in Cura, but if there is one enlighten me, and I will try to also add it.
 * Rotation lock works on all platforms. On Windows and OSX it can/must be configured in the 3DConnexion interface. In Linux the plugin takes care of dis- and enabling the camera-rotation.
 
 ### Plans for future development (descending by importance)
-* [x] Rotation lock on linux (included in v1.1.0)
+* [x] Rotation lock on Linux (included in v1.1.0)
 * [x] Constraint orbit movement (included in v1.1.0)
 * [ ] Menu button to open `Print settings`
 * [ ] Esc key support if required
 * [ ] Maybe include the plugin in the Cura marketplace
-* I'm always open for suggestions and contributions
+* I'm always open to suggestions and contributions
 
 
 Installation
@@ -73,16 +74,16 @@ Building the plugin from source
 ---
 ### Prerequirements
 #### Mac OSX / Linux
-* You will need Python 3.8 with pymalloc deactivated. I built version 3.8.10 from [source](https://www.python.org/downloads/release/python-3810/), as the non-pymalloc version wasn't available through apt-get or macports. To disable pymalloc use the `--without-pymalloc` flag during configuration.
+* You will need Python 3.10 with pymalloc deactivated. I built version 3.10.13 from [source](https://www.python.org/downloads/release/python-31013/), as the non-pymalloc version wasn't available through apt-get or MacPorts. To disable pymalloc use the `--without-pymalloc` flag during configuration.
 * You will also need a standard build environment including g++/gcc, etc.  
-* Finally, on Linux you will need the development package of libspacenav. On Ubuntu you can install those using.
+* Finally, on Linux, you will need the development package of libspacenav. On Ubuntu, you can install those using.
 ```
 sudo apt install libspnav-dev
 ```
 
 #### Windows
-* You will need Python 3.8. I used Python 3.8.10 as it is the latest version of Python 3.8 available on the [download page](https://www.python.org/downloads/windows/).
-* You will also need Visual Studio 2015 (not that easy to come by without an Microsoft developer account, but the iso image can still be found in a stackoverflow post). At least I used version 2015, but as I'm not normally a Windows developer I don't know whether newer versions will also work.
+* You will need Python 3.10. I used Python 3.10.13 as it is the latest version of Python 3.10 available on the [download page](https://www.python.org/downloads/windows/).
+* You will also need Visual Studio 2015 (not that easy to come by without a Microsoft developer account, but the iso image can still be found in a StackOverflow post). At least I used version 2015, but as I'm not normally a Windows developer I don't know whether newer versions will also work.
 * Finally, you will need the 3Dconnexion SDK which is available in the [developer section of the 3Dconnexion website](https://www.3dconnexion.de/service/software-developer.html) (requires you to create an account).
 
 ### Building the code
@@ -90,7 +91,7 @@ sudo apt install libspnav-dev
 2. Using the (Power)shell navigate to the src directory inside the extracted folder.
 3. Run
 ```
-python3.8 setup.py build
+python3.10 setup.py build
 ```
 to build the library. Make sure to use the python version without pymalloc.
 4. If step 3 fails because some symbols or headers were not found, have a look in `setup.py` and check that the include and link paths are set correctly for your system.

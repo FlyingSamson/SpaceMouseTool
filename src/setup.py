@@ -21,14 +21,22 @@ spacemouse_libraries = []
 spacemouse_lib_dirs = []
 extension_dir = ""
 
+libdir = os.path.join("..", "lib")
+
 system = platform.system()
 if system == "Darwin":
-    spacemouse_link_args = ['-framework', '3DconnexionClient']
-    spacemouse_compiler_args.extend(['-DWITH_LIB3DX'])
+    spacemouse_link_args = ['-F', '/Library/Frameworks/', '-framework', '3DconnexionClient']
+    spacemouse_compiler_args.extend(['-F', '/Library/Frameworks/', '-DWITH_LIB3DX'])
+    if platform.machine() == "arm64":
+        libdir = os.path.join(libdir, "darwin_arm64")
+    else:
+        libdir = os.path.join(libdir, "darwin_x86_64")
 elif system == "Linux":
+    libdir = os.path.join(libdir, "linux")
     spacemouse_static_libs = ['/usr/lib/libspnav.a']
     spacemouse_compiler_args.extend(['-DWITH_LIBSPACENAV', '-DWITH_DAEMONSPACENAV'])
 elif system == "Windows":
+    libdir = os.path.join(libdir, "windows")
     spacemouse_compiler_args.extend(['-DWITH_LIB3DX_WIN'])
     spacemouse_libraries.extend(['siapp'])
     spacemouse_lib_dirs.extend(["C:\\Program Files (x86)\\3Dconnexion\\3DxWare SDK\\Lib\\x64"])
@@ -51,4 +59,7 @@ module = Extension('pyspacemouse',
 setup(name='PackageName',
       version=1.0,
       description='First test',
-      ext_modules=[module])
+      ext_modules=[module],
+      options={
+        'build': {'build_lib': libdir}
+      })

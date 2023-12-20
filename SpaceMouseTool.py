@@ -22,12 +22,15 @@ from typing import cast
 
 import platform
 if platform.system() == "Darwin":
-    from .lib.pyspacemouse import set_logger, start_spacemouse_daemon, release_spacemouse_daemon
+    if platform.machine() == "arm64":
+        from .lib.darwin_arm64.pyspacemouse import set_logger, start_spacemouse_daemon, release_spacemouse_daemon
+    else:
+        from .lib.darwin_x86_64.pyspacemouse import set_logger, start_spacemouse_daemon, release_spacemouse_daemon
 elif platform.system() == "Linux":
-    from .lib.pyspacemouse import set_logger, start_spacemouse_daemon, release_spacemouse_daemon
+    from .lib.linux.pyspacemouse import set_logger, start_spacemouse_daemon, release_spacemouse_daemon
 elif platform.system() == "Windows":
-    from .lib.pyspacemouse import set_logger, start_spacemouse_daemon, release_spacemouse_daemon
-    from .lib.pyspacemouse import set_window_handle, process_win_event
+    from .lib.windows.pyspacemouse import set_logger, start_spacemouse_daemon, release_spacemouse_daemon
+    from .lib.windows.pyspacemouse import set_window_handle, process_win_event
 
 
 catalog = i18nCatalog("cura")
